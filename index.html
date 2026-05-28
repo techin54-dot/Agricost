@@ -1,678 +1,163 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#062018" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="format-detection" content="telephone=no" />
-  <title>AgriCost Smart - ระบบวิเคราะห์ต้นทุนเกษตร</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#071e18">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+  <title>AgriCost Pro | ระบบวิเคราะห์ต้นทุนเกษตร</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: { prompt: ['Prompt', 'sans-serif'] },
-          boxShadow: {
-            glow: '0 0 30px rgba(16,185,129,.22)',
-            card: '0 18px 48px rgba(2,6,23,.09)'
-          }
-        }
-      }
-    };
-  </script>
-
   <style>
     :root{
-      --safe-top: env(safe-area-inset-top);
-      --safe-bottom: env(safe-area-inset-bottom);
-      --safe-left: env(safe-area-inset-left);
-      --safe-right: env(safe-area-inset-right);
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
+      --safe-left:env(safe-area-inset-left);
+      --safe-right:env(safe-area-inset-right);
+      --nav-height:78px;
       --green:#10b981;
-      --dark:#061b16;
+      --cyan:#22d3ee;
+      --blue:#2563eb;
+      --red:#ef4444;
+      --amber:#f59e0b;
+      --dark:#071e18;
+      --dark-2:#0b2b22;
       --ink:#0f172a;
       --muted:#64748b;
-      --line:#dbe7e1;
-      --topbar-height:74px;
-      --bottom-nav-height:78px;
+      --line:#d8ece4;
+      --card:#ffffff;
+      --glass:rgba(255,255,255,.82);
     }
-
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html{height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-    body{
-      margin:0;
-      min-height:100dvh;
-      overflow:hidden;
-      font-family:'Prompt',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-      color:var(--ink);
-      background:
-        radial-gradient(circle at 10% 0%, rgba(16,185,129,.20), transparent 34rem),
-        radial-gradient(circle at 90% 12%, rgba(59,130,246,.10), transparent 30rem),
-        linear-gradient(180deg,#f7fbf8 0%,#edf6f1 100%);
-    }
-    html.dark body{color:#e5e7eb;background:linear-gradient(180deg,#020617 0%,#071711 100%)}
-    button,input,textarea,select{font-family:inherit;font-size:16px}
-    button{min-height:44px;touch-action:manipulation;border:0;cursor:pointer}
-    input,textarea,select{-webkit-appearance:none;appearance:none}
+    body{min-height:100dvh;margin:0;overflow-x:hidden;color:var(--ink);font-family:'Prompt',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:radial-gradient(circle at 10% 0%,rgba(16,185,129,.24),transparent 34rem),radial-gradient(circle at 88% 10%,rgba(34,211,238,.14),transparent 30rem),linear-gradient(180deg,#f6fffb 0%,#eaf7f1 100%)}
+    body.dark{--card:#0f2d24;--glass:rgba(15,45,36,.78);--ink:#eafff5;--muted:#a9c8bd;--line:rgba(255,255,255,.12);background:radial-gradient(circle at 10% 0%,rgba(16,185,129,.18),transparent 32rem),radial-gradient(circle at 88% 10%,rgba(34,211,238,.12),transparent 28rem),linear-gradient(180deg,#04120e 0%,#071e18 100%)}
+    button,input,select,textarea{font-family:inherit;font-size:16px}
+    button{border:0;cursor:pointer;min-height:44px;touch-action:manipulation}
+    input,select,textarea{-webkit-appearance:none;appearance:none}
     input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-
-    .app-shell{min-height:100dvh;height:100dvh;display:flex;flex-direction:column;padding-left:var(--safe-left);padding-right:var(--safe-right);overflow:hidden}
-    .topbar{position:sticky;top:0;z-index:40;flex:0 0 auto;padding-top:var(--safe-top);background:rgba(6,27,22,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.08)}
-    .tech-bg{background:linear-gradient(135deg,rgba(6,27,22,.98),rgba(9,55,43,.96));position:relative;overflow:hidden}
-    .tech-bg::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);background-size:28px 28px;mask-image:linear-gradient(180deg,#000,transparent 85%);pointer-events:none}
-    .soft-card{background:#fff;border:1px solid rgba(219,231,225,.9);box-shadow:0 14px 34px rgba(2,6,23,.06)}
-    .dark .soft-card{background:rgba(15,23,42,.86);border-color:rgba(148,163,184,.16);box-shadow:0 16px 40px rgba(0,0,0,.25)}
-    .glass{background:rgba(255,255,255,.86);border:1px solid rgba(219,231,225,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 18px 48px rgba(2,6,23,.08)}
-    .dark .glass{background:rgba(15,23,42,.70);border-color:rgba(148,163,184,.16)}
-    .dark-glass{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-    .field{width:100%;min-height:50px;border:1px solid #dbe7e1;border-radius:18px;background:#fff;padding:.82rem .95rem;outline:none;transition:.18s ease;color:#0f172a}
-    .field:focus{border-color:#10b981;box-shadow:0 0 0 4px rgba(16,185,129,.14)}
-    .dark .field{background:#0f172a;border-color:#263243;color:#e5e7eb}
-    .nav-btn{color:rgba(255,255,255,.72);border:1px solid transparent;background:transparent}
-    .nav-btn.active{color:#062018;background:linear-gradient(135deg,#a7f3d0,#34d399);border-color:rgba(255,255,255,.25);box-shadow:0 12px 30px rgba(16,185,129,.28)}
-    .content-wrap{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;width:100%;padding-top:20px;padding-bottom:20px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
-    .content-inner{max-width:1280px;margin:0 auto;width:100%;padding-left:16px;padding-right:16px}
-    .bottom-nav{position:fixed;z-index:50;display:none;left:calc(10px + var(--safe-left));right:calc(10px + var(--safe-right));bottom:calc(10px + var(--safe-bottom));height:var(--bottom-nav-height);border-radius:28px;padding:8px;gap:6px;background:rgba(6,27,22,.92);border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 46px rgba(2,6,23,.36);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-    .bottom-nav button{flex:1;min-width:0;border-radius:21px;color:#cbd5e1;background:transparent;font-size:11px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:100%;padding:6px 2px}
-    .bottom-nav button i{font-size:18px;line-height:1}
-    .bottom-nav button.active{background:#10b981;color:#052018}
-    .page{display:none;animation:fadeIn .22s ease}
-    .page.active{display:block}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    .toast{position:fixed;left:50%;top:calc(14px + var(--safe-top));transform:translateX(-50%) translateY(-10px);opacity:0;z-index:100;pointer-events:none;transition:.24s ease;max-width:min(92vw,520px);border-radius:18px;padding:12px 16px;color:#fff;font-weight:700;box-shadow:0 18px 44px rgba(2,6,23,.32)}
-    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-    .chart-fallback{height:310px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:24px;background:rgba(148,163,184,.10);color:#94a3b8;padding:16px}
-    .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}.print-only{display:none}
-
-    @media(max-width:1023px){
-      .desktop-nav{display:none!important}
-      .bottom-nav{display:flex}
-      .content-wrap{padding-top:16px;padding-bottom:calc(var(--bottom-nav-height) + 28px + var(--safe-bottom))}
-      .content-inner{padding-left:12px;padding-right:12px}
-    }
-    @media(max-width:640px){
-      .hero-title{font-size:1.45rem;line-height:1.35}
-      .hero-stat{font-size:1.75rem}
-      .kpi-num{font-size:1.15rem}
-      .topbar h1{font-size:1rem}
-      .topbar p{font-size:10px}
-    }
-    @media(print){
-      .topbar,.bottom-nav,.no-print{display:none!important}
-      body{background:#fff!important;overflow:visible}
-      .app-shell{height:auto;overflow:visible}
-      .content-wrap{overflow:visible;padding:0!important}
-      .soft-card,.glass{box-shadow:none!important;border:1px solid #ddd!important}
-      .page{display:block!important}
-      .print-only{display:block!important}
-    }
+    .app-shell{min-height:100dvh;display:grid;grid-template-columns:278px minmax(0,1fr);padding-left:var(--safe-left);padding-right:var(--safe-right)}
+    .sidebar{position:sticky;top:0;height:100dvh;padding:20px 14px;background:linear-gradient(180deg,#04120e,#0b2b22 48%,#0f3d2e);color:white;border-right:1px solid rgba(255,255,255,.08);overflow:auto}
+    .brand{display:flex;align-items:center;gap:12px;padding:10px 8px 22px;border-bottom:1px solid rgba(255,255,255,.10);margin-bottom:16px}
+    .brand-icon{width:50px;height:50px;border-radius:19px;background:linear-gradient(135deg,#22c55e,#67e8f9);color:#052e23;display:flex;align-items:center;justify-content:center;font-size:23px;box-shadow:0 16px 38px rgba(16,185,129,.28)}
+    .brand-title{font-size:21px;font-weight:800;line-height:1}.brand-sub{font-size:11px;color:rgba(255,255,255,.64);margin-top:4px}
+    .side-link{width:100%;display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:18px;background:transparent;color:rgba(255,255,255,.76);font-weight:700;text-align:left;margin-bottom:8px;transition:.18s ease}
+    .side-link:hover{background:rgba(255,255,255,.08);color:white}.side-link.active{background:linear-gradient(135deg,#67e8f9,#10b981);color:#052e23;box-shadow:0 16px 36px rgba(16,185,129,.25)}
+    .sidebar-footer{position:absolute;left:14px;right:14px;bottom:18px;color:rgba(255,255,255,.55);font-size:11px;border-top:1px solid rgba(255,255,255,.10);padding-top:14px;line-height:1.55}
+    .main{min-width:0;min-height:100dvh;display:flex;flex-direction:column}.topbar{position:sticky;top:0;z-index:30;padding-top:var(--safe-top);background:rgba(246,255,251,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--line)}body.dark .topbar{background:rgba(7,30,24,.86)}
+    .topbar-inner{height:68px;display:flex;align-items:center;gap:12px;padding:0 22px}.mobile-menu{display:none;background:var(--card);color:var(--dark);border:1px solid var(--line);border-radius:16px;width:46px}.page-title{font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}.icon-btn{width:46px;border-radius:16px;background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:0 10px 24px rgba(15,23,42,.06)}.danger-btn{border-radius:16px;padding:0 14px;background:#fee2e2;color:#b91c1c;font-weight:800;border:1px solid #fecaca}
+    .content{flex:1;width:100%;max-width:1200px;margin:0 auto;padding:22px 22px 36px}.page{display:none;animation:fadeIn .22s ease}.page.active{display:block}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .hero{position:relative;overflow:hidden;border-radius:34px;color:white;padding:30px;background:linear-gradient(135deg,#04120e,#0f766e 56%,#10b981);box-shadow:0 24px 60px rgba(15,61,46,.22);margin-bottom:18px}.hero:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(180deg,#000,transparent 88%)}.hero:after{content:"";position:absolute;right:-70px;top:-70px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(103,232,249,.34),transparent 66%)}.hero-content{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(270px,.75fr);gap:18px;align-items:center}.hero-kicker{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);font-size:12px;font-weight:800;margin-bottom:12px}.hero h1{font-size:34px;line-height:1.22;margin:0 0 10px;font-weight:800}.hero p{margin:0;color:rgba(255,255,255,.80);line-height:1.7}.hero-card{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.18);border-radius:28px;padding:18px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}.hero-card small{color:rgba(255,255,255,.72);font-weight:700}.hero-card strong{display:block;font-size:31px;line-height:1.15;margin-top:6px}
+    .grid{display:grid;gap:16px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}.card{background:var(--glass);border:1px solid var(--line);border-radius:28px;box-shadow:0 18px 44px rgba(15,23,42,.08);overflow:hidden;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}.card-pad{padding:20px}.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}.card-title{font-size:18px;font-weight:800;color:var(--ink)}.card-sub{font-size:13px;color:var(--muted);margin-top:3px}.section-title{font-size:23px;font-weight:800;margin:0 0 14px;color:#0f766e}body.dark .section-title{color:#86efac}.field-group{margin-bottom:14px}.field-label{display:block;font-size:13px;font-weight:800;color:var(--muted);margin:0 0 7px}.field{width:100%;min-height:48px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:18px;padding:12px 14px;outline:none;transition:.18s ease}.field:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(16,185,129,.14)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:18px;padding:12px 16px;font-weight:800;text-decoration:none;min-height:48px}.btn-primary{background:linear-gradient(135deg,#67e8f9,#10b981);color:#052e23;box-shadow:0 14px 32px rgba(16,185,129,.22)}.btn-blue{background:linear-gradient(135deg,#3b82f6,#2563eb);color:white}.btn-soft{background:#ecfdf5;color:#047857;border:1px solid #bbf7d0}.btn-red{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca}.live-box{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:1px solid #a7f3d0;border-radius:28px;padding:20px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin-top:14px}body.dark .live-box{background:rgba(16,185,129,.10)}.live-label{font-weight:800;color:#047857}.live-value{font-size:30px;font-weight:800;color:#0f172a}body.dark .live-value{color:#ecfdf5}.kpi{background:var(--glass);border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:0 14px 34px rgba(15,23,42,.06);position:relative;overflow:hidden}.kpi:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--green)}.kpi.red:before{background:var(--red)}.kpi.blue:before{background:var(--blue)}.kpi.amber:before{background:var(--amber)}.kpi small{color:var(--muted);font-weight:800}.kpi strong{display:block;font-size:25px;margin-top:4px}
+    .report-shell{display:grid;gap:14px}.report-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}.report-mini{border-radius:22px;padding:15px;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(34,211,238,.08));border:1px solid var(--line)}.report-mini small{display:block;color:var(--muted);font-weight:800}.report-mini strong{display:block;font-size:20px;margin-top:4px}.report-group{border:1px solid var(--line);background:var(--glass);border-radius:24px;overflow:hidden;box-shadow:0 14px 34px rgba(15,23,42,.06)}.report-group details{display:block}.report-group summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:42px minmax(0,1fr) auto 32px;gap:12px;align-items:center;padding:16px 18px}.report-group summary::-webkit-details-marker{display:none}.report-icon{width:42px;height:42px;border-radius:16px;background:linear-gradient(135deg,#67e8f9,#10b981);color:#052e23;display:flex;align-items:center;justify-content:center}.report-name{font-weight:800;font-size:17px}.report-note{font-size:12px;color:var(--muted);margin-top:2px}.report-total{text-align:right;font-size:18px;font-weight:800}.chev{transition:.2s ease;color:var(--muted)}details[open] .chev{transform:rotate(180deg)}.report-detail{border-top:1px solid var(--line);padding:10px 18px 16px}.report-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:11px 0;border-bottom:1px dashed var(--line)}.report-row:last-child{border-bottom:0}.row-label{font-weight:700}.row-value{font-weight:800;text-align:right}.table-wrap{overflow:auto;border-radius:20px;border:1px solid var(--line)}
+    .bottom-nav{position:fixed;z-index:50;left:calc(10px + var(--safe-left));right:calc(10px + var(--safe-right));bottom:calc(10px + var(--safe-bottom));height:var(--nav-height);display:none;gap:4px;padding:8px;border-radius:28px;background:rgba(7,30,24,.94);border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 46px rgba(2,6,23,.32);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}.bottom-nav button{flex:1;min-width:0;border-radius:21px;background:transparent;color:#cbd5e1;font-size:11px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}.bottom-nav i{font-size:18px}.bottom-nav button.active{background:#10b981;color:#052e23}.toast{position:fixed;left:50%;top:calc(14px + var(--safe-top));transform:translateX(-50%) translateY(-10px);opacity:0;z-index:100;pointer-events:none;transition:.24s ease;max-width:min(92vw,520px);border-radius:18px;padding:12px 16px;color:white;font-weight:800;box-shadow:0 18px 44px rgba(2,6,23,.30);background:#059669}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @media(max-width:1023px){.app-shell{display:block}.sidebar{display:none}.mobile-menu{display:inline-flex;align-items:center;justify-content:center}.bottom-nav{display:flex}.content{padding:18px 14px calc(var(--nav-height) + 112px + var(--safe-bottom))}.hero-content{grid-template-columns:1fr}.hero h1{font-size:26px}.grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3,.grid-2{grid-template-columns:1fr}.report-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.topbar-inner{padding:0 14px}.danger-btn span{display:none}}
+    @media(max-width:560px){.hero{border-radius:26px;padding:20px}.hero h1{font-size:22px}.hero-card strong{font-size:25px}.live-box{grid-template-columns:1fr}.live-value{font-size:25px}.grid-4{grid-template-columns:1fr}.report-summary{grid-template-columns:1fr}.report-group summary{grid-template-columns:38px minmax(0,1fr) 28px}.report-total{grid-column:2/3;text-align:left;font-size:16px}.card-head{align-items:flex-start;flex-direction:column}.top-actions{gap:6px}.page-title{font-size:15px}.content{padding-left:12px;padding-right:12px}}
+    @media(print){.sidebar,.topbar,.bottom-nav,.no-print{display:none!important}.app-shell{display:block}.content{max-width:none;padding:0}.page{display:block!important}.card,.kpi,.hero,.report-group{box-shadow:none!important}body{background:white;color:#111}.hero{color:#111;background:white;border:1px solid #ddd}.hero:before,.hero:after{display:none}.report-group details{display:block}.report-group details:not([open]) .report-detail{display:block}}
   </style>
 </head>
-
 <body>
-  <div id="toast" class="toast bg-emerald-600">ข้อความแจ้งเตือน</div>
-
-  <div class="app-shell">
-    <header class="topbar text-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-11 h-11 rounded-2xl bg-emerald-400 text-emerald-950 flex items-center justify-center shadow-glow shrink-0"><i class="fa-solid fa-leaf text-xl"></i></div>
-          <div class="min-w-0">
-            <h1 class="font-extrabold leading-tight truncate">AgriCost Smart</h1>
-            <p class="text-[11px] text-emerald-100/70 truncate">ระบบวิเคราะห์ต้นทุนเกษตร • GitHub / LINE Ready</p>
-          </div>
-        </div>
-        <nav class="desktop-nav flex items-center gap-2 text-sm font-bold">
-          <button type="button" data-page="form" class="nav-btn active px-4 py-2 rounded-2xl"><i class="fa-solid fa-pen-to-square mr-1"></i> บันทึก</button>
-          <button type="button" data-page="dashboard" class="nav-btn px-4 py-2 rounded-2xl"><i class="fa-solid fa-chart-pie mr-1"></i> Dashboard</button>
-          <button type="button" data-page="report" class="nav-btn px-4 py-2 rounded-2xl"><i class="fa-solid fa-file-invoice mr-1"></i> รายงาน</button>
-          <button type="button" data-page="history" class="nav-btn px-4 py-2 rounded-2xl"><i class="fa-solid fa-clock-rotate-left mr-1"></i> ประวัติ</button>
-        </nav>
-        <div class="flex items-center gap-2 no-print">
-          <button type="button" id="dark-toggle" class="w-11 h-11 rounded-2xl bg-white/10 text-white"><i class="fa-solid fa-moon"></i></button>
-          <button type="button" id="reset-app" class="hidden sm:inline-flex bg-red-500/90 text-white font-bold px-4 py-2 rounded-2xl"><i class="fa-solid fa-rotate-right mr-2"></i>ล้าง</button>
-        </div>
-      </div>
-    </header>
-
-    <main id="main-scroll" class="content-wrap">
-      <div class="content-inner space-y-6">
-        <section id="page-form" class="page active space-y-6">
-          <div class="tech-bg rounded-[2rem] p-4 sm:p-8 text-white shadow-card">
-            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-              <div class="lg:col-span-8">
-                <span class="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-3 py-1 text-xs font-bold mb-4"><i class="fa-solid fa-microchip text-lime-300"></i> Smart Hi-Technology Cost Dashboard</span>
-                <h2 class="hero-title text-2xl sm:text-4xl font-extrabold leading-tight">วิเคราะห์ต้นทุนการผลิตเกษตร<br><span class="text-emerald-300">รู้กำไร รู้จุดคุ้มทุน วางแผนได้ทันที</span></h2>
-                <p class="text-emerald-50/80 mt-3 leading-relaxed">กรอกข้อมูลพื้นที่ ผลผลิต ราคาขาย และรายการต้นทุน ระบบจะคำนวณรายได้ ต้นทุนรวม กำไรสุทธิ ต้นทุนต่อไร่ ต้นทุนต่อกิโลกรัม และจุดคุ้มทุน พร้อมกราฟและรายงานสรุป</p>
-              </div>
-              <div class="lg:col-span-4 grid grid-cols-2 gap-3">
-                <div class="dark-glass rounded-3xl p-4"><p class="text-xs text-emerald-100/70">กำไรล่าสุด</p><strong id="hero-profit" class="hero-stat text-3xl font-extrabold text-emerald-300">0</strong><p class="text-[11px] text-white/50">บาท</p></div>
-                <div class="dark-glass rounded-3xl p-4"><p class="text-xs text-emerald-100/70">ประวัติ</p><strong id="hero-history" class="hero-stat text-3xl font-extrabold text-lime-300">0</strong><p class="text-[11px] text-white/50">รายการ</p></div>
-              </div>
+  <div id="toast" class="toast">บันทึกแล้ว</div>
+  <div class="app-shell" id="appShell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-icon"><i class="fa-solid fa-leaf"></i></div><div><div class="brand-title">AgriCost Pro</div><div class="brand-sub">Smart Farm Cost Analytics</div></div></div>
+      <button class="side-link active" data-page="form"><i class="fa-solid fa-pen-to-square"></i> บันทึกข้อมูล</button>
+      <button class="side-link" data-page="dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
+      <button class="side-link" data-page="report"><i class="fa-solid fa-file-invoice"></i> รายงานสรุป</button>
+      <button class="side-link" data-page="history"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติ</button>
+      <div class="sidebar-footer">ข้อมูลจัดเก็บในเครื่องผู้ใช้ด้วย LocalStorage<br>เหมาะสำหรับ GitHub Pages และ LINE Browser</div>
+    </aside>
+    <section class="main">
+      <header class="topbar"><div class="topbar-inner"><button class="mobile-menu" id="mobileMenu" type="button"><i class="fa-solid fa-leaf"></i></button><div class="page-title" id="topTitle">บันทึกข้อมูลการผลิต</div><div class="top-actions no-print"><button class="icon-btn" id="themeBtn" type="button" aria-label="toggle dark mode"><i class="fa-solid fa-moon"></i></button><button class="danger-btn" id="resetBtn" type="button"><i class="fa-solid fa-rotate-right"></i> <span>ล้างข้อมูลใหม่</span></button></div></div></header>
+      <main class="content" id="mainContent">
+        <section id="page-form" class="page active">
+          <div class="hero"><div class="hero-content"><div><div class="hero-kicker"><i class="fa-solid fa-satellite-dish"></i> Smart Hi-Technology Farm Cost Analysis</div><h1>ระบบวิเคราะห์ต้นทุนเกษตร<br>คำนวณกำไร จุดคุ้มทุน และรายงานสรุป</h1><p>กรอกข้อมูลพื้นที่ ผลผลิต ราคาขาย และต้นทุนแต่ละหมวด ระบบจะคำนวณผลตอบแทน พร้อมแสดง Dashboard และรายงานแบบย่อ/ขยายตามหมวดหมู่</p></div><div class="hero-card"><small>กำไรสุทธิคาดการณ์</small><strong id="heroProfit">0.00 บาท</strong><small id="heroSummary">รายได้ 0.00 บาท • ต้นทุน 0.00 บาท</small></div></div></div>
+          <form id="agriForm" autocomplete="off">
+            <div class="grid grid-2">
+              <div class="card"><div class="card-head"><div><div class="card-title"><i class="fa-solid fa-circle-info"></i> ข้อมูลพื้นฐาน</div><div class="card-sub">ระบุข้อมูลการผลิตและรายได้</div></div></div><div class="card-pad"><div class="grid grid-2"><div class="field-group"><label class="field-label">ชื่อเกษตรกร</label><input class="field calc-input" id="farmerName" type="text" placeholder="เช่น นายสมชาย ใจดี"></div><div class="field-group"><label class="field-label">ชนิดพืช</label><input class="field calc-input" id="crop" type="text" placeholder="เช่น ข้าว มันสำปะหลัง อ้อย"></div><div class="field-group"><label class="field-label">พื้นที่เพาะปลูก (ไร่)</label><input class="field calc-input" id="area" type="number" inputmode="decimal" min="0" step="0.01" value="1"></div><div class="field-group"><label class="field-label">ผลผลิตทั้งหมด (กก.)</label><input class="field calc-input" id="yieldAmount" type="number" inputmode="decimal" min="0" step="0.01" value="0"></div><div class="field-group"><label class="field-label">ราคาขาย (บาท/กก.)</label><input class="field calc-input" id="price" type="number" inputmode="decimal" min="0" step="0.01" value="0"></div><div class="field-group"><label class="field-label">ฤดู/รอบการผลิต</label><input class="field calc-input" id="season" type="text" placeholder="เช่น ปี 2569"></div></div></div></div>
+              <div class="card"><div class="card-head"><div><div class="card-title"><i class="fa-solid fa-coins"></i> สรุปสด</div><div class="card-sub">ระบบคำนวณทันทีขณะกรอกข้อมูล</div></div></div><div class="card-pad"><div class="live-box"><div><div class="live-label">กำไรสุทธิ</div><div class="live-value" id="liveProfit">0.00 บาท</div></div><button class="btn btn-primary" type="submit"><i class="fa-solid fa-chart-line"></i> วิเคราะห์ผล</button></div><button class="btn btn-blue save-history-btn" type="button" id="saveToHistoryBtn" style="width:100%;margin-top:12px"><i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลและไปหน้าประวัติ</button><div class="grid grid-2" style="margin-top:14px"><div class="kpi red"><small>ต้นทุนรวม</small><strong id="miniCost">0.00</strong></div><div class="kpi"><small>รายได้รวม</small><strong id="miniRevenue">0.00</strong></div></div></div></div>
             </div>
-          </div>
-
-          <form id="agri-form" class="space-y-5">
-            <div class="soft-card rounded-[2rem] p-5 sm:p-6">
-              <h2 class="text-xl font-extrabold text-emerald-800 dark:text-emerald-300 mb-4"><i class="fa-solid fa-circle-info mr-2"></i>1. ข้อมูลพื้นฐาน</h2>
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                <div class="sm:col-span-2"><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="farmerName">ชื่อเกษตรกร / ชื่อแปลง</label><input id="farmerName" class="field" placeholder="เช่น แปลงนาข้าว หมู่ 1" autocomplete="name"></div>
-                <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="crop">ชนิดพืช</label><input id="crop" class="field" placeholder="เช่น ข้าว"></div>
-                <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="area">พื้นที่ (ไร่)</label><input id="area" type="number" inputmode="decimal" min="0" step="0.01" class="field calc-input" placeholder="0"></div>
-                <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="yieldKg">ผลผลิต (กก.)</label><input id="yieldKg" type="number" inputmode="decimal" min="0" step="0.01" class="field calc-input" placeholder="0"></div>
-                <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="price">ราคาขาย (บาท/กก.)</label><input id="price" type="number" inputmode="decimal" min="0" step="0.01" class="field calc-input" placeholder="0"></div>
-              </div>
+            <div class="grid grid-2" style="margin-top:16px">
+              <div class="card"><div class="card-head"><div><div class="card-title"><i class="fa-solid fa-boxes-stacked"></i> ต้นทุนปัจจัยการผลิต</div><div class="card-sub">ปุ๋ย สารเคมี เมล็ดพันธุ์ วัสดุ</div></div></div><div class="card-pad"><div class="grid grid-2"><div class="field-group"><label class="field-label">ค่าปุ๋ย</label><input class="field calc-input cost-input" id="cFert" type="number" inputmode="decimal" min="0" value="0"></div><div class="field-group"><label class="field-label">ค่าสารเคมี/ชีวภัณฑ์</label><input class="field calc-input cost-input" id="cChem" type="number" inputmode="decimal" min="0" value="0"></div><div class="field-group"><label class="field-label">ค่าเมล็ดพันธุ์/ต้นพันธุ์</label><input class="field calc-input cost-input" id="cSeed" type="number" inputmode="decimal" min="0" value="0"></div><div class="field-group"><label class="field-label">ค่าวัสดุ/น้ำมัน</label><input class="field calc-input cost-input" id="cMat" type="number" inputmode="decimal" min="0" value="0"></div></div></div></div>
+              <div class="card"><div class="card-head"><div><div class="card-title"><i class="fa-solid fa-tractor"></i> ต้นทุนแรงงานและบริการ</div><div class="card-sub">แรงงาน เครื่องจักร ขนส่ง และอื่น ๆ</div></div></div><div class="card-pad"><div class="grid grid-2"><div class="field-group"><label class="field-label">ค่าแรงงาน</label><input class="field calc-input cost-input" id="cLabor" type="number" inputmode="decimal" min="0" value="0"></div><div class="field-group"><label class="field-label">ค่าเครื่องจักร</label><input class="field calc-input cost-input" id="cMachine" type="number" inputmode="decimal" min="0" value="0"></div><div class="field-group"><label class="field-label">ค่าน้ำ/ไฟ/ขนส่ง</label><input class="field calc-input cost-input" id="cUtility" type="number" inputmode="decimal" min="0" value="0"></div><div class="field-group"><label class="field-label">ค่าใช้จ่ายอื่น ๆ</label><input class="field calc-input cost-input" id="cMisc" type="number" inputmode="decimal" min="0" value="0"></div></div></div></div>
             </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <div class="soft-card rounded-[2rem] p-5 sm:p-6">
-                <h2 class="text-xl font-extrabold text-emerald-800 dark:text-emerald-300 mb-4"><i class="fa-solid fa-seedling mr-2"></i>2. ต้นทุนปัจจัยการผลิต</h2>
-                <div class="grid grid-cols-2 gap-3">
-                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cFert">ค่าปุ๋ย</label><input id="cFert" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
-                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cChem">ค่าสารเคมี</label><input id="cChem" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
-                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cSeed">ค่าเมล็ดพันธุ์</label><input id="cSeed" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
-                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cMat">ค่าวัสดุ/น้ำมัน</label><input id="cMat" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
+            <div class="card no-print" style="margin-top:16px;border:1px solid rgba(16,185,129,.28);background:linear-gradient(135deg,rgba(16,185,129,.13),rgba(34,211,238,.08))">
+              <div class="card-pad" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center">
+                <div>
+                  <div style="font-weight:800;font-size:18px;color:var(--ink)"><i class="fa-solid fa-floppy-disk" style="color:#059669"></i> บันทึกข้อมูลการผลิต</div>
+                  <div style="font-size:13px;color:var(--muted);margin-top:3px">กดปุ่มนี้เพื่อบันทึกข้อมูลปัจจุบัน และเปิดดูรายการที่หน้า “ประวัติ”</div>
                 </div>
-              </div>
-
-              <div class="soft-card rounded-[2rem] p-5 sm:p-6">
-                <h2 class="text-xl font-extrabold text-sky-800 dark:text-sky-300 mb-4"><i class="fa-solid fa-tractor mr-2"></i>3. แรงงาน เครื่องจักร และอื่น ๆ</h2>
-                <div class="grid grid-cols-2 gap-3">
-                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cLabor">ค่าแรง</label><input id="cLabor" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
-                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cMachine">ค่าเครื่องจักร</label><input id="cMachine" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
-                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cUtility">ค่าน้ำ/ไฟ/ขนส่ง</label><input id="cUtility" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
-                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cMisc">ค่าใช้จ่ายอื่น ๆ</label><input id="cMisc" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="glass rounded-[2rem] p-5 sm:p-6">
-              <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-                <div class="lg:col-span-8">
-                  <p class="font-bold text-emerald-700 dark:text-emerald-300">กำไรสุทธิคาดการณ์</p>
-                  <h2 id="liveProfit" class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">0 บาท</h2>
-                  <p id="liveSub" class="text-sm text-slate-500 dark:text-slate-400 mt-1">กรอกข้อมูลเพื่อดูผลวิเคราะห์แบบทันที</p>
-                </div>
-                <div class="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-2 no-print">
-                  <button type="submit" class="bg-gradient-to-r from-emerald-500 to-lime-400 text-emerald-950 font-extrabold px-5 py-3 rounded-2xl shadow-glow w-full"><i class="fa-solid fa-chart-line mr-2"></i>ประมวลผล Dashboard</button>
-                  <button type="button" id="save-record" class="bg-blue-600 text-white font-extrabold px-5 py-3 rounded-2xl w-full"><i class="fa-solid fa-floppy-disk mr-2"></i>บันทึกประวัติ</button>
-                </div>
+                <button class="btn btn-primary save-history-btn" type="button" id="saveToHistoryBtnBottom"><i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล</button>
               </div>
             </div>
           </form>
         </section>
-
-        <section id="page-dashboard" class="page space-y-5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div><h2 class="text-2xl font-extrabold text-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-chart-pie mr-2"></i>Dashboard วิเคราะห์ผล</h2><p class="text-sm text-slate-500 dark:text-slate-400">สรุปภาพรวมรายได้ ต้นทุน กำไร และจุดคุ้มทุน</p></div>
-            <div class="flex gap-2 no-print"><button type="button" id="print-report" class="bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-slate-700 px-4 py-2 rounded-2xl font-bold"><i class="fa-solid fa-print mr-1"></i> พิมพ์</button><button type="button" id="share-record" class="bg-emerald-600 text-white px-4 py-2 rounded-2xl font-bold"><i class="fa-solid fa-share-nodes mr-1"></i> แชร์</button></div>
-          </div>
-
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div class="soft-card rounded-3xl p-4 border-l-4 border-red-500"><p class="text-xs text-slate-500 dark:text-slate-400">ต้นทุนรวม</p><h3 id="kCost" class="kpi-num text-2xl font-extrabold text-red-600">0</h3></div>
-            <div class="soft-card rounded-3xl p-4 border-l-4 border-emerald-500"><p class="text-xs text-slate-500 dark:text-slate-400">รายได้รวม</p><h3 id="kRevenue" class="kpi-num text-2xl font-extrabold text-emerald-600">0</h3></div>
-            <div class="soft-card rounded-3xl p-4 border-l-4 border-blue-500"><p class="text-xs text-slate-500 dark:text-slate-400">กำไรสุทธิ</p><h3 id="kProfit" class="kpi-num text-2xl font-extrabold text-blue-600">0</h3></div>
-            <div class="soft-card rounded-3xl p-4 border-l-4 border-amber-500"><p class="text-xs text-slate-500 dark:text-slate-400">จุดคุ้มทุน</p><h3 id="kBreakEven" class="kpi-num text-2xl font-extrabold text-amber-600">0</h3></div>
-          </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <div class="soft-card rounded-[2rem] p-5 lg:col-span-2"><h3 class="font-extrabold mb-4 dark:text-white"><i class="fa-solid fa-chart-column text-emerald-600 mr-2"></i>รายได้ - ต้นทุน - กำไร</h3><div class="h-[310px] relative" id="barChartBox"><canvas id="barChart"></canvas></div></div>
-            <div class="soft-card rounded-[2rem] p-5"><h3 class="font-extrabold mb-4 dark:text-white"><i class="fa-solid fa-chart-pie text-sky-600 mr-2"></i>สัดส่วนต้นทุน</h3><div class="h-[310px] relative" id="pieChartBox"><canvas id="pieChart"></canvas></div></div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="glass rounded-3xl p-4"><p class="text-xs text-slate-500 dark:text-slate-400">ต้นทุนต่อไร่</p><h3 id="kCostPerRai" class="text-2xl font-extrabold text-slate-900 dark:text-white">0</h3></div>
-            <div class="glass rounded-3xl p-4"><p class="text-xs text-slate-500 dark:text-slate-400">ต้นทุนต่อกก.</p><h3 id="kCostPerKg" class="text-2xl font-extrabold text-slate-900 dark:text-white">0</h3></div>
-            <div class="glass rounded-3xl p-4"><p class="text-xs text-slate-500 dark:text-slate-400">ผลผลิตต่อไร่</p><h3 id="kYieldPerRai" class="text-2xl font-extrabold text-slate-900 dark:text-white">0</h3></div>
-          </div>
-        </section>
-
-        <section id="page-report" class="page space-y-5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div><h2 class="text-2xl font-extrabold text-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-file-invoice mr-2"></i>รายงานสรุปต้นทุน</h2><p class="text-sm text-slate-500 dark:text-slate-400">ตารางสรุปรายการต้นทุนและผลวิเคราะห์</p></div>
-            <button type="button" id="export-csv" class="no-print bg-emerald-600 text-white px-4 py-2 rounded-2xl font-bold"><i class="fa-solid fa-file-excel mr-1"></i> Export Excel/CSV</button>
-          </div>
-          <div class="soft-card rounded-[2rem] p-3 sm:p-5 overflow-x-auto">
-            <table class="w-full min-w-[680px] text-sm" id="reportTable">
-              <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-300"><tr><th class="text-left p-3 rounded-l-2xl">หมวดหมู่</th><th class="text-left p-3">รายการ</th><th class="text-right p-3 rounded-r-2xl">จำนวนเงิน / ค่า</th></tr></thead>
-              <tbody id="reportBody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <section id="page-history" class="page space-y-5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div><h2 class="text-2xl font-extrabold text-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-clock-rotate-left mr-2"></i>ประวัติการบันทึก</h2><p class="text-sm text-slate-500 dark:text-slate-400">ข้อมูลบันทึกในเครื่องผู้ใช้ด้วย LocalStorage</p></div>
-            <button type="button" id="clear-history" class="no-print bg-red-50 text-red-600 px-4 py-2 rounded-2xl font-bold"><i class="fa-solid fa-trash mr-1"></i> ล้างประวัติ</button>
-          </div>
-          <div id="historyList" class="space-y-3"></div>
-        </section>
-      </div>
-    </main>
+        <section id="page-dashboard" class="page"><div class="section-title">Dashboard วิเคราะห์ผล</div><div class="grid grid-4" style="margin-bottom:16px"><div class="kpi red"><small>ต้นทุนรวม</small><strong id="kCost">0.00</strong></div><div class="kpi"><small>รายได้รวม</small><strong id="kRevenue">0.00</strong></div><div class="kpi blue"><small>กำไรสุทธิ</small><strong id="kProfit">0.00</strong></div><div class="kpi amber"><small>จุดคุ้มทุน</small><strong id="kBreakEven">0.00</strong></div></div><div class="grid grid-2"><div class="card"><div class="card-head"><div><div class="card-title">สัดส่วนต้นทุน</div><div class="card-sub">เปรียบเทียบต้นทุนแต่ละหมวด</div></div></div><div class="card-pad"><canvas id="pieChart" height="260"></canvas></div></div><div class="card"><div class="card-head"><div><div class="card-title">รายได้ ต้นทุน และกำไร</div><div class="card-sub">ภาพรวมผลตอบแทน</div></div></div><div class="card-pad"><canvas id="barChart" height="260"></canvas></div></div></div></section>
+        <section id="page-report" class="page"><div class="card"><div class="card-head"><div><div class="card-title">รายงานสรุปผลการวิเคราะห์</div><div class="card-sub" id="reportMeta">ยังไม่มีข้อมูล</div></div><div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-soft" type="button" id="expandReportBtn"><i class="fa-solid fa-chevron-down"></i> ขยายทั้งหมด</button><button class="btn btn-soft" type="button" id="printBtn"><i class="fa-solid fa-print"></i> พิมพ์</button><button class="btn btn-blue" type="button" id="exportBtn"><i class="fa-solid fa-file-csv"></i> Export CSV</button></div></div><div class="card-pad"><div class="report-summary" id="reportSummary"></div><div class="report-shell" id="reportBody"></div></div></div></section>
+        <section id="page-history" class="page"><div class="card"><div class="card-head"><div><div class="card-title">ประวัติการวิเคราะห์</div><div class="card-sub">ข้อมูลบันทึกไว้ในเครื่องผู้ใช้</div></div><button class="btn btn-red no-print" type="button" id="clearHistoryBtn"><i class="fa-solid fa-trash"></i> ล้างประวัติ</button></div><div class="card-pad"><div id="historyList" class="grid"></div></div></div></section>
+      </main>
+    </section>
   </div>
-
-  <nav class="bottom-nav lg:hidden no-print">
-    <button type="button" data-page="form" class="active"><i class="fa-solid fa-pen-to-square"></i><span>บันทึก</span></button>
-    <button type="button" data-page="dashboard"><i class="fa-solid fa-chart-pie"></i><span>วิเคราะห์</span></button>
-    <button type="button" data-page="report"><i class="fa-solid fa-file-invoice"></i><span>รายงาน</span></button>
-    <button type="button" data-page="history"><i class="fa-solid fa-clock-rotate-left"></i><span>ประวัติ</span></button>
-  </nav>
-
+  <nav class="bottom-nav no-print" id="bottomNav"><button type="button" data-page="form" class="active"><i class="fa-solid fa-pen-to-square"></i><span>บันทึก</span></button><button type="button" data-page="dashboard"><i class="fa-solid fa-chart-pie"></i><span>วิเคราะห์</span></button><button type="button" data-page="report"><i class="fa-solid fa-file-lines"></i><span>รายงาน</span></button><button type="button" data-page="history"><i class="fa-solid fa-clock-rotate-left"></i><span>ประวัติ</span></button></nav>
   <script>
     'use strict';
-
-    const STORAGE_CURRENT = 'agricost_current_v4';
-    const STORAGE_HISTORY = 'agricost_history_v4';
-    const STORAGE_THEME = 'agricost_theme_v4';
-    let currentRecord = null;
-    let historyRecords = [];
-    let pieChart = null;
-    let barChart = null;
-
-    const costItems = [
-      ['ปัจจัยการผลิต','ค่าปุ๋ย','cFert'],
-      ['ปัจจัยการผลิต','ค่าสารเคมี','cChem'],
-      ['ปัจจัยการผลิต','ค่าเมล็ดพันธุ์','cSeed'],
-      ['ปัจจัยการผลิต','ค่าวัสดุ/น้ำมัน','cMat'],
-      ['แรงงานและเครื่องจักร','ค่าแรง','cLabor'],
-      ['แรงงานและเครื่องจักร','ค่าเครื่องจักร','cMachine'],
-      ['แรงงานและเครื่องจักร','ค่าน้ำ/ไฟ/ขนส่ง','cUtility'],
-      ['อื่น ๆ','ค่าใช้จ่ายอื่น ๆ','cMisc']
-    ];
-
-    document.addEventListener('DOMContentLoaded', initApp);
-
-    function initApp(){
-      currentRecord = loadJSON(STORAGE_CURRENT, null);
-      historyRecords = loadJSON(STORAGE_HISTORY, []);
-      if(loadJSON(STORAGE_THEME, 'light') === 'dark') document.documentElement.classList.add('dark');
-      bindEvents();
-      if(currentRecord) fillForm(currentRecord);
-      updateLivePreview();
-      renderAll();
-      showPage('form', false);
-      runSelfTests();
-    }
-
-    function bindEvents(){
-      document.querySelectorAll('[data-page]').forEach(function(btn){btn.addEventListener('click', function(){showPage(btn.dataset.page);});});
-      document.querySelectorAll('.calc-input').forEach(function(input){input.addEventListener('input', updateLivePreview);});
-      getElement('agri-form').addEventListener('submit', handleSubmit);
-      getElement('save-record').addEventListener('click', saveCurrentRecord);
-      getElement('print-report').addEventListener('click', function(){window.print();});
-      getElement('export-csv').addEventListener('click', exportCSV);
-      getElement('share-record').addEventListener('click', shareCurrentRecord);
-      getElement('clear-history').addEventListener('click', clearHistory);
-      getElement('reset-app').addEventListener('click', resetApp);
-      getElement('dark-toggle').addEventListener('click', toggleDarkMode);
-    }
-
-    function showPage(page, animate){
-      if(animate === undefined) animate = true;
-      document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active');});
-      var pageEl = getElement('page-' + page);
-      if(pageEl) pageEl.classList.add('active');
-      document.querySelectorAll('[data-page]').forEach(function(btn){btn.classList.toggle('active', btn.dataset.page === page);});
-      if(page === 'dashboard') renderDashboard();
-      if(page === 'report') renderReport();
-      if(page === 'history') renderHistory();
-      var mainScroll = getElement('main-scroll');
-      if(mainScroll){
-        if(animate) mainScroll.scrollTo({top:0, behavior:'smooth'});
-        else mainScroll.scrollTop = 0;
-      }
-    }
-    window.showPage = showPage;
-
-    function handleSubmit(event){
-      event.preventDefault();
-      var record = buildRecordFromForm(false);
-      if(!record.area || !record.yieldKg || !record.price){
-        toast('กรุณากรอกพื้นที่ ผลผลิต และราคาขายให้ครบถ้วน','error');
-        return;
-      }
-      currentRecord = record;
-      saveJSON(STORAGE_CURRENT, currentRecord);
-      renderAll();
-      toast('ประมวลผล Dashboard สำเร็จ');
-      showPage('dashboard');
-    }
-
-    function buildRecordFromForm(createNewId){
-      var now = new Date().toISOString();
-      var data = {
-        id: createNewId || !(currentRecord && currentRecord.id) ? uid() : currentRecord.id,
-        createdAt: createNewId || !(currentRecord && currentRecord.createdAt) ? now : currentRecord.createdAt,
-        updatedAt: now,
-        farmerName: getValue('farmerName').trim() || 'ไม่ระบุชื่อแปลง',
-        crop: getValue('crop').trim() || 'ไม่ระบุชนิดพืช',
-        area: nonNegative(getValue('area')),
-        yieldKg: nonNegative(getValue('yieldKg')),
-        price: nonNegative(getValue('price'))
-      };
-      costItems.forEach(function(item){data[item[2]] = nonNegative(getValue(item[2]));});
-      return calculateRecord(data);
-    }
-
-    function calculateRecord(data){
-      var normalized = Object.assign({}, data);
-      normalized.area = nonNegative(normalized.area);
-      normalized.yieldKg = nonNegative(normalized.yieldKg);
-      normalized.price = nonNegative(normalized.price);
-      costItems.forEach(function(item){normalized[item[2]] = nonNegative(normalized[item[2]]);});
-      var totalCost = costItems.reduce(function(sum,item){return sum + normalized[item[2]];}, 0);
-      var revenue = normalized.yieldKg * normalized.price;
-      var profit = revenue - totalCost;
-      var costPerRai = normalized.area > 0 ? totalCost / normalized.area : 0;
-      var costPerKg = normalized.yieldKg > 0 ? totalCost / normalized.yieldKg : 0;
-      var yieldPerRai = normalized.area > 0 ? normalized.yieldKg / normalized.area : 0;
-      var breakEvenPrice = normalized.yieldKg > 0 ? totalCost / normalized.yieldKg : 0;
-      var profitPerRai = normalized.area > 0 ? profit / normalized.area : 0;
-      return Object.assign({}, normalized, {totalCost:totalCost,revenue:revenue,profit:profit,costPerRai:costPerRai,costPerKg:costPerKg,yieldPerRai:yieldPerRai,breakEvenPrice:breakEvenPrice,profitPerRai:profitPerRai});
-    }
-
-    function updateLivePreview(){
-      var base = {area: nonNegative(getValue('area')), yieldKg: nonNegative(getValue('yieldKg')), price: nonNegative(getValue('price'))};
-      costItems.forEach(function(item){base[item[2]] = nonNegative(getValue(item[2]));});
-      var record = calculateRecord(base);
-      setText('liveProfit', money(record.profit) + ' บาท');
-      setText('liveSub', 'รายได้ ' + money(record.revenue) + ' บาท • ต้นทุน ' + money(record.totalCost) + ' บาท');
-    }
-
-    function renderAll(){
-      renderHero();
-      renderDashboard();
-      renderReport();
-      renderHistory();
-    }
-
-    function renderHero(){
-      setText('hero-profit', currentRecord ? moneyCompact(currentRecord.profit) : '0');
-      setText('hero-history', historyRecords.length);
-    }
-
-    function renderDashboard(){
-      var r = currentRecord || calculateRecord(emptyRecord());
-      setText('kCost', money(r.totalCost));
-      setText('kRevenue', money(r.revenue));
-      setText('kProfit', money(r.profit));
-      setText('kBreakEven', money(r.breakEvenPrice) + ' บ./กก.');
-      setText('kCostPerRai', money(r.costPerRai) + ' บ./ไร่');
-      setText('kCostPerKg', money(r.costPerKg) + ' บ./กก.');
-      setText('kYieldPerRai', money(r.yieldPerRai) + ' กก./ไร่');
-      renderCharts(r);
-    }
-
-    function renderCharts(record){
-      var pieBox = getElement('pieChartBox');
-      var barBox = getElement('barChartBox');
-      if(!window.Chart){
-        if(pieBox) pieBox.innerHTML = '<div class="chart-fallback">ไม่สามารถโหลด Chart.js ได้</div>';
-        if(barBox) barBox.innerHTML = '<div class="chart-fallback">ไม่สามารถโหลด Chart.js ได้</div>';
-        return;
-      }
-      if(!getElement('pieChart') && pieBox) pieBox.innerHTML = '<canvas id="pieChart"></canvas>';
-      if(!getElement('barChart') && barBox) barBox.innerHTML = '<canvas id="barChart"></canvas>';
-      var pieCanvas = getElement('pieChart');
-      var barCanvas = getElement('barChart');
-      if(!pieCanvas || !barCanvas) return;
-      if(pieChart) pieChart.destroy();
-      if(barChart) barChart.destroy();
-      var costValues = costItems.map(function(item){return nonNegative(record[item[2]]);});
-      pieChart = new Chart(pieCanvas, {
-        type:'doughnut',
-        data:{labels:costItems.map(function(item){return item[1];}),datasets:[{data:costValues,borderWidth:2}]},
-        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Prompt'}}}}}
-      });
-      barChart = new Chart(barCanvas, {
-        type:'bar',
-        data:{labels:['รายได้','ต้นทุน','กำไร'],datasets:[{label:'บาท',data:[record.revenue,record.totalCost,record.profit],borderRadius:12}]},
-        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{family:'Prompt'}}},y:{ticks:{font:{family:'Prompt'}}}}}
-      });
-    }
-
-    function renderReport(){
-      var body = getElement('reportBody');
-      if(!body) return;
-      var r = currentRecord;
-      if(!r){
-        body.innerHTML = '<tr><td colspan="3" class="p-6 text-center text-slate-400">ยังไม่มีข้อมูล กรุณากรอกและประมวลผลก่อน</td></tr>';
-        return;
-      }
-      var rows = buildReportRows(r);
-      body.innerHTML = rows.map(function(row){return '<tr class="dark:text-slate-200"><td class="p-3 text-slate-500 dark:text-slate-400">' + escapeHTML(row[0]) + '</td><td class="p-3 font-bold">' + escapeHTML(row[1]) + '</td><td class="p-3 text-right font-extrabold">' + escapeHTML(row[2]) + '</td></tr>';}).join('');
-    }
-
-    function buildReportRows(r){
-      var rows = [
-        ['ข้อมูลพื้นฐาน','ชื่อเกษตรกร/แปลง',r.farmerName],
-        ['ข้อมูลพื้นฐาน','ชนิดพืช',r.crop],
-        ['ข้อมูลพื้นฐาน','พื้นที่',money(r.area) + ' ไร่'],
-        ['ข้อมูลพื้นฐาน','ผลผลิตทั้งหมด',money(r.yieldKg) + ' กก.'],
-        ['ข้อมูลพื้นฐาน','ราคาขาย',money(r.price) + ' บาท/กก.']
-      ];
-      costItems.forEach(function(item){rows.push([item[0], item[1], money(r[item[2]]) + ' บาท']);});
-      rows.push(['ผลวิเคราะห์','รายได้รวม',money(r.revenue) + ' บาท']);
-      rows.push(['ผลวิเคราะห์','ต้นทุนรวม',money(r.totalCost) + ' บาท']);
-      rows.push(['ผลวิเคราะห์','กำไรสุทธิ',money(r.profit) + ' บาท']);
-      rows.push(['ผลวิเคราะห์','ต้นทุนต่อไร่',money(r.costPerRai) + ' บาท/ไร่']);
-      rows.push(['ผลวิเคราะห์','ต้นทุนต่อกิโลกรัม',money(r.costPerKg) + ' บาท/กก.']);
-      rows.push(['ผลวิเคราะห์','ผลผลิตต่อไร่',money(r.yieldPerRai) + ' กก./ไร่']);
-      rows.push(['ผลวิเคราะห์','จุดคุ้มทุน',money(r.breakEvenPrice) + ' บาท/กก.']);
-      return rows;
-    }
-
-    function renderHistory(){
-      var list = getElement('historyList');
-      if(!list) return;
-      if(!historyRecords.length){
-        list.innerHTML = '<div class="soft-card rounded-3xl p-10 text-center text-slate-400"><i class="fa-solid fa-clock-rotate-left text-4xl mb-3 text-slate-300"></i><p class="font-bold">ยังไม่มีประวัติการบันทึก</p></div>';
-        return;
-      }
-      list.innerHTML = historyRecords.map(function(r){
-        return '<div class="glass rounded-3xl p-4"><div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3"><div><p class="text-xs text-slate-400">' + escapeHTML(formatDate(r.updatedAt || r.createdAt)) + '</p><h3 class="text-xl font-extrabold text-emerald-800 dark:text-emerald-300">' + escapeHTML(r.crop) + ' • ' + escapeHTML(r.farmerName) + '</h3><p class="text-sm text-slate-500 dark:text-slate-400 mt-1">รายได้ ' + money(r.revenue) + ' • ต้นทุน ' + money(r.totalCost) + ' • กำไร ' + money(r.profit) + ' บาท</p></div><div class="flex gap-2 no-print"><button type="button" data-load-history="' + escapeAttr(r.id) + '" class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-700"><i class="fa-solid fa-folder-open"></i></button><button type="button" data-share-history="' + escapeAttr(r.id) + '" class="w-11 h-11 rounded-2xl bg-slate-100 text-slate-700"><i class="fa-solid fa-share-nodes"></i></button><button type="button" data-delete-history="' + escapeAttr(r.id) + '" class="w-11 h-11 rounded-2xl bg-red-50 text-red-600"><i class="fa-solid fa-trash"></i></button></div></div></div>';
-      }).join('');
-      list.querySelectorAll('[data-load-history]').forEach(function(btn){btn.addEventListener('click', function(){loadHistoryRecord(btn.dataset.loadHistory);});});
-      list.querySelectorAll('[data-share-history]').forEach(function(btn){btn.addEventListener('click', function(){shareRecord(historyRecords.find(function(r){return r.id === btn.dataset.shareHistory;}));});});
-      list.querySelectorAll('[data-delete-history]').forEach(function(btn){btn.addEventListener('click', function(){deleteHistoryRecord(btn.dataset.deleteHistory);});});
-    }
-
-    function saveCurrentRecord(){
-      var record = buildRecordFromForm(true);
-      if(!record.area || !record.yieldKg || !record.price){
-        toast('กรุณากรอกข้อมูลพื้นฐานให้ครบก่อนบันทึก','error');
-        return;
-      }
-      currentRecord = record;
-      historyRecords.unshift(record);
-      saveJSON(STORAGE_CURRENT, currentRecord);
-      saveJSON(STORAGE_HISTORY, historyRecords);
-      renderAll();
-      toast('บันทึกประวัติเรียบร้อย');
-    }
-
-    function loadHistoryRecord(id){
-      var record = historyRecords.find(function(r){return r.id === id;});
-      if(!record) return;
-      currentRecord = record;
-      saveJSON(STORAGE_CURRENT, currentRecord);
-      fillForm(record);
-      updateLivePreview();
-      renderAll();
-      toast('โหลดข้อมูลจากประวัติแล้ว');
-      showPage('dashboard');
-    }
-
-    function deleteHistoryRecord(id){
-      if(!confirm('ยืนยันการลบประวัติรายการนี้?')) return;
-      historyRecords = historyRecords.filter(function(r){return r.id !== id;});
-      saveJSON(STORAGE_HISTORY, historyRecords);
-      renderAll();
-      toast('ลบประวัติแล้ว');
-    }
-
-    function clearHistory(){
-      if(!historyRecords.length){
-        toast('ยังไม่มีประวัติ','error');
-        return;
-      }
-      if(!confirm('ยืนยันการล้างประวัติทั้งหมด?')) return;
-      historyRecords = [];
-      saveJSON(STORAGE_HISTORY, historyRecords);
-      renderAll();
-      toast('ล้างประวัติเรียบร้อย');
-    }
-
-    function fillForm(r){
-      ['farmerName','crop','area','yieldKg','price','cFert','cChem','cSeed','cMat','cLabor','cMachine','cUtility','cMisc'].forEach(function(id){
-        var el = getElement(id);
-        if(el) el.value = r[id] !== undefined && r[id] !== null ? r[id] : '';
-      });
-    }
-
-    function resetApp(){
-      if(!confirm('ต้องการล้างข้อมูลที่กรอกอยู่หรือไม่? ประวัติที่บันทึกไว้จะยังคงอยู่')) return;
-      currentRecord = null;
-      localStorage.removeItem(STORAGE_CURRENT);
-      getElement('agri-form').reset();
-      costItems.forEach(function(item){
-        var el = getElement(item[2]);
-        if(el) el.value = 0;
-      });
-      updateLivePreview();
-      renderAll();
-      toast('ล้างข้อมูลที่กรอกแล้ว');
-      showPage('form');
-    }
-
-    function exportCSV(){
-      if(!currentRecord){
-        toast('ยังไม่มีข้อมูลสำหรับส่งออก','error');
-        return;
-      }
-      var rows = [['หมวดหมู่','รายการ','จำนวนเงิน/ค่า']].concat(buildReportRows(currentRecord));
-      var csv = '\uFEFF' + rows.map(function(row){
-        return row.map(function(cell){return '"' + String(cell).replace(/"/g,'""') + '"';}).join(',');
-      }).join('\n');
-      var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'AgriCost-' + sanitizeFileName(currentRecord.crop || 'report') + '.csv';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    async function shareCurrentRecord(){
-      if(!currentRecord){
-        toast('ยังไม่มีข้อมูลสำหรับแชร์','error');
-        return;
-      }
-      await shareRecord(currentRecord);
-    }
-
-    async function shareRecord(r){
-      if(!r) return;
-      var text = [
-        'AgriCost Smart',
-        'พืช: ' + r.crop,
-        'แปลง/เกษตรกร: ' + r.farmerName,
-        'พื้นที่: ' + money(r.area) + ' ไร่',
-        'ผลผลิต: ' + money(r.yieldKg) + ' กก.',
-        'รายได้: ' + money(r.revenue) + ' บาท',
-        'ต้นทุน: ' + money(r.totalCost) + ' บาท',
-        'กำไรสุทธิ: ' + money(r.profit) + ' บาท',
-        'จุดคุ้มทุน: ' + money(r.breakEvenPrice) + ' บาท/กก.'
-      ].join('\n');
-      try{
-        if(navigator.share){
-          await navigator.share({title:'AgriCost Smart', text:text});
-          return;
-        }
-        if(navigator.clipboard && window.isSecureContext){
-          await navigator.clipboard.writeText(text);
-        }else{
-          fallbackCopy(text);
-        }
-        toast('คัดลอกข้อมูลสำหรับแชร์แล้ว');
-      }catch(e){
-        fallbackCopy(text);
-        toast('คัดลอกข้อมูลสำหรับแชร์แล้ว');
-      }
-    }
-
-    function toggleDarkMode(){
-      document.documentElement.classList.toggle('dark');
-      saveJSON(STORAGE_THEME, document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-      renderCharts(currentRecord || calculateRecord(emptyRecord()));
-    }
-
-    function fallbackCopy(text){
-      var ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.left = '-999px';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      ta.remove();
-    }
-
-    function emptyRecord(){
-      var record = {area:0,yieldKg:0,price:0};
-      costItems.forEach(function(item){record[item[2]] = 0;});
-      return record;
-    }
-
-    function getElement(id){return document.getElementById(id);}
-    function getValue(id){var el = getElement(id); return el ? el.value : '';}
-    function safeNumber(value,fallback){var n = Number(value); return Number.isFinite(n) ? n : (fallback || 0);}
-    function nonNegative(value){return Math.max(0, safeNumber(value,0));}
-    function money(v){return safeNumber(v,0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});}
-    function moneyCompact(v){return safeNumber(v,0).toLocaleString('th-TH',{maximumFractionDigits:0});}
-    function setText(id,value){var el = getElement(id); if(el) el.textContent = value;}
-    function toast(msg,type){
-      var t = getElement('toast');
-      if(!t) return;
-      t.textContent = msg;
-      t.className = 'toast ' + (type === 'error' ? 'bg-red-600' : 'bg-emerald-600') + ' show';
-      clearTimeout(toast.timer);
-      toast.timer = setTimeout(function(){t.classList.remove('show');},2800);
-    }
-    function uid(){return 'id-' + Math.random().toString(36).slice(2,10) + '-' + Date.now().toString(36);}
-    function loadJSON(key,fallback){try{var value = localStorage.getItem(key); return value ? JSON.parse(value) : fallback;}catch(e){return fallback;}}
-    function saveJSON(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch(e){console.warn(e);}}
-    function escapeHTML(str){return String(str).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c];});}
-    function escapeAttr(str){return escapeHTML(str);}
-    function sanitizeFileName(str){return String(str).replace(/[\\/:*?"<>|]/g,'-').trim() || 'report';}
-    function formatDate(value){var d = new Date(value); return Number.isNaN(d.getTime()) ? '-' : d.toLocaleString('th-TH');}
-
-    function runSelfTests(){
-      console.assert(typeof window.showPage === 'function','showPage must be global');
-      var test = calculateRecord({area:10,yieldKg:5000,price:10,cFert:1000,cChem:500,cSeed:500,cMat:0,cLabor:1000,cMachine:1000,cUtility:500,cMisc:500});
-      console.assert(test.revenue === 50000,'Revenue test failed');
-      console.assert(test.totalCost === 5000,'Cost test failed');
-      console.assert(test.profit === 45000,'Profit test failed');
-      console.assert(buildReportRows(test).length >= 10,'Report rows test failed');
-      var negative = calculateRecord({area:-1,yieldKg:-1,price:-1,cFert:-100,cChem:0,cSeed:0,cMat:0,cLabor:0,cMachine:0,cUtility:0,cMisc:0});
-      console.assert(negative.totalCost === 0 && negative.revenue === 0,'Non-negative normalization test failed');
-      var rows = [['หมวดหมู่','รายการ','จำนวนเงิน/ค่า']].concat(buildReportRows(test));
-      var csv = '\uFEFF' + rows.map(function(row){return row.map(function(cell){return '"' + String(cell).replace(/"/g,'""') + '"';}).join(',');}).join('\n');
-      console.assert(csv.indexOf('\n') > -1,'CSV newline test failed');
-      var shareText = ['A','B'].join('\n');
-      console.assert(shareText === 'A\nB','Share newline test failed');
-    }
+    var STORAGE_DATA='agricost_pro_data_v4';
+    var STORAGE_HISTORY='agricost_pro_history_v4';
+    var STORAGE_THEME='agricost_pro_theme_v4';
+    var state={};
+    var historyLogs=[];
+    var pieChart=null;
+    var barChart=null;
+    var reportExpanded=false;
+    var initialized=false;
+    var fields=['farmerName','crop','season','area','yieldAmount','price','cFert','cChem','cSeed','cMat','cLabor','cMachine','cUtility','cMisc'];
+    var costItems=[['ปัจจัยการผลิต','ค่าปุ๋ย','cFert'],['ปัจจัยการผลิต','ค่าสารเคมี/ชีวภัณฑ์','cChem'],['ปัจจัยการผลิต','ค่าเมล็ดพันธุ์/ต้นพันธุ์','cSeed'],['ปัจจัยการผลิต','ค่าวัสดุ/น้ำมัน','cMat'],['แรงงานและบริการ','ค่าแรงงาน','cLabor'],['แรงงานและบริการ','ค่าเครื่องจักร','cMachine'],['แรงงานและบริการ','ค่าน้ำ/ไฟ/ขนส่ง','cUtility'],['แรงงานและบริการ','ค่าใช้จ่ายอื่น ๆ','cMisc']];
+    document.addEventListener('DOMContentLoaded',initApp);
+    function initApp(){if(initialized)return;initialized=true;removeDuplicatedDom();state=normalizeData(loadJSON(STORAGE_DATA,{}));historyLogs=loadJSON(STORAGE_HISTORY,[]);applyTheme(loadJSON(STORAGE_THEME,'light'));bindEvents();fillForm();updateAll();showPage('form',false);runSelfTests();}
+    function removeDuplicatedDom(){removeExtra('.app-shell');removeExtra('.bottom-nav');removeExtra('#toast');}
+    function removeExtra(selector){var nodes=document.querySelectorAll(selector);nodes.forEach(function(node,index){if(index>0)node.remove();});}
+    function bindEvents(){document.body.addEventListener('click',function(event){var pageButton=event.target.closest('[data-page]');if(pageButton){event.preventDefault();showPage(pageButton.dataset.page);return;}var loadButton=event.target.closest('[data-load-history]');if(loadButton){event.preventDefault();loadHistory(loadButton.dataset.loadHistory);return;}var deleteButton=event.target.closest('[data-delete-history]');if(deleteButton){event.preventDefault();deleteHistory(deleteButton.dataset.deleteHistory);}});document.querySelectorAll('.calc-input').forEach(function(input){input.addEventListener('input',handleInput);});document.getElementById('agriForm').addEventListener('submit',function(event){event.preventDefault();saveCurrentAnalysis();showPage('dashboard');toast('ประมวลผลเรียบร้อย');});document.querySelectorAll('.save-history-btn').forEach(function(button){button.addEventListener('click',function(){saveCurrentAnalysis();showPage('history');toast('บันทึกข้อมูลและไปหน้าประวัติแล้ว');});});document.getElementById('resetBtn').addEventListener('click',resetApp);document.getElementById('themeBtn').addEventListener('click',toggleTheme);document.getElementById('printBtn').addEventListener('click',function(){window.print();});document.getElementById('exportBtn').addEventListener('click',exportCSV);document.getElementById('clearHistoryBtn').addEventListener('click',clearHistory);document.getElementById('expandReportBtn').addEventListener('click',toggleAllReports);document.getElementById('mobileMenu').addEventListener('click',function(){showPage('form');});}
+    function handleInput(){readForm();saveJSON(STORAGE_DATA,state);updateAll();}
+    function readForm(){fields.forEach(function(id){var el=document.getElementById(id);if(!el)return;state[id]=el.type==='number'?toNumber(el.value):el.value.trim();});state.updatedAt=new Date().toISOString();}
+    function fillForm(){fields.forEach(function(id){var el=document.getElementById(id);if(el&&state[id]!==undefined)el.value=state[id];});}
+    function normalizeData(data){var base={farmerName:'',crop:'',season:'',area:1,yieldAmount:0,price:0,cFert:0,cChem:0,cSeed:0,cMat:0,cLabor:0,cMachine:0,cUtility:0,cMisc:0,updatedAt:new Date().toISOString()};Object.keys(base).forEach(function(key){if(data&&data[key]!==undefined)base[key]=data[key];});['area','yieldAmount','price','cFert','cChem','cSeed','cMat','cLabor','cMachine','cUtility','cMisc'].forEach(function(key){base[key]=toNumber(base[key]);});return base;}
+    function calculate(data){var cost=costItems.reduce(function(sum,item){return sum+toNumber(data[item[2]]);},0);var productionInput=toNumber(data.cFert)+toNumber(data.cChem)+toNumber(data.cSeed)+toNumber(data.cMat);var serviceCost=toNumber(data.cLabor)+toNumber(data.cMachine)+toNumber(data.cUtility)+toNumber(data.cMisc);var revenue=toNumber(data.yieldAmount)*toNumber(data.price);var profit=revenue-cost;var area=toNumber(data.area);var yieldAmount=toNumber(data.yieldAmount);var price=toNumber(data.price);return{cost:cost,productionInput:productionInput,serviceCost:serviceCost,revenue:revenue,profit:profit,costPerRai:area>0?cost/area:0,revenuePerRai:area>0?revenue/area:0,profitPerRai:area>0?profit/area:0,costPerKg:yieldAmount>0?cost/yieldAmount:0,breakEvenKg:price>0?cost/price:0};}
+    function getReportGroups(result){return[{id:'summary',icon:'fa-chart-line',title:'ภาพรวมผลตอบแทน',note:'รายได้ ต้นทุน กำไร และจุดคุ้มทุน',total:result.profit,items:[['รายได้รวม',result.revenue],['ต้นทุนรวม',result.cost],['กำไรสุทธิ',result.profit],['ต้นทุนต่อไร่',result.costPerRai],['กำไรต่อไร่',result.profitPerRai],['ต้นทุนต่อกิโลกรัม',result.costPerKg],['จุดคุ้มทุนผลผลิต (กก.)',result.breakEvenKg]]},{id:'input',icon:'fa-boxes-stacked',title:'ปัจจัยการผลิต',note:'ปุ๋ย สารเคมี เมล็ดพันธุ์ และวัสดุ',total:result.productionInput,items:costItems.filter(function(x){return x[0]==='ปัจจัยการผลิต';}).map(function(x){return[x[1],toNumber(state[x[2]])];})},{id:'service',icon:'fa-tractor',title:'แรงงานและบริการ',note:'แรงงาน เครื่องจักร ขนส่ง และค่าใช้จ่ายอื่น',total:result.serviceCost,items:costItems.filter(function(x){return x[0]==='แรงงานและบริการ';}).map(function(x){return[x[1],toNumber(state[x[2]])];})}];}
+    function updateAll(){var result=calculate(state);setText('heroProfit',money(result.profit)+' บาท');setText('heroSummary','รายได้ '+money(result.revenue)+' บาท • ต้นทุน '+money(result.cost)+' บาท');setText('liveProfit',money(result.profit)+' บาท');setText('miniCost',money(result.cost));setText('miniRevenue',money(result.revenue));setText('kCost',money(result.cost));setText('kRevenue',money(result.revenue));setText('kProfit',money(result.profit));setText('kBreakEven',money(result.breakEvenKg)+' กก.');updateReport(result);updateCharts(result);renderHistory();}
+    function updateReport(result){var meta=(state.farmerName||'ไม่ระบุชื่อ')+' • '+(state.crop||'ไม่ระบุพืช')+' • พื้นที่ '+num(state.area)+' ไร่';setText('reportMeta',meta);var groups=getReportGroups(result);document.getElementById('reportSummary').innerHTML='<div class="report-mini"><small>รายได้รวม</small><strong>'+money(result.revenue)+'</strong></div><div class="report-mini"><small>ต้นทุนรวม</small><strong>'+money(result.cost)+'</strong></div><div class="report-mini"><small>กำไรสุทธิ</small><strong>'+money(result.profit)+'</strong></div><div class="report-mini"><small>จุดคุ้มทุน</small><strong>'+money(result.breakEvenKg)+' กก.</strong></div>';document.getElementById('reportBody').innerHTML=groups.map(function(group){return renderReportGroup(group,reportExpanded);}).join('');}
+    function renderReportGroup(group,isOpen){var rows=group.items.map(function(item){return'<div class="report-row"><div class="row-label">'+escapeHTML(item[0])+'</div><div class="row-value">'+money(item[1])+'</div></div>';}).join('');return'<article class="report-group"><details '+(isOpen?'open':'')+'><summary><div class="report-icon"><i class="fa-solid '+group.icon+'"></i></div><div><div class="report-name">'+escapeHTML(group.title)+'</div><div class="report-note">'+escapeHTML(group.note)+'</div></div><div class="report-total">'+money(group.total)+'</div><i class="fa-solid fa-chevron-down chev"></i></summary><div class="report-detail">'+rows+'</div></details></article>';}
+    function toggleAllReports(){reportExpanded=!reportExpanded;updateReport(calculate(state));var btn=document.getElementById('expandReportBtn');btn.innerHTML=reportExpanded?'<i class="fa-solid fa-chevron-up"></i> ย่อทั้งหมด':'<i class="fa-solid fa-chevron-down"></i> ขยายทั้งหมด';}
+    function updateCharts(result){if(typeof Chart==='undefined')return;var labels=costItems.map(function(item){return item[1];});var values=costItems.map(function(item){return toNumber(state[item[2]]);});var pieCanvas=document.getElementById('pieChart');var barCanvas=document.getElementById('barChart');if(!pieCanvas||!barCanvas)return;var hasCosts=values.some(function(v){return v>0;});var pieData=hasCosts?values:[1];var pieLabels=hasCosts?labels:['ยังไม่มีต้นทุน'];if(pieChart)pieChart.destroy();if(barChart)barChart.destroy();pieChart=new Chart(pieCanvas,{type:'doughnut',data:{labels:pieLabels,datasets:[{data:pieData,borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});barChart=new Chart(barCanvas,{type:'bar',data:{labels:['รายได้','ต้นทุน','กำไร'],datasets:[{data:[result.revenue,result.cost,result.profit],borderRadius:14}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});}
+    function saveCurrentAnalysis(){readForm();var item={id:uid(),createdAt:new Date().toISOString(),data:cloneData(state),result:calculate(state)};historyLogs.unshift(item);historyLogs=historyLogs.slice(0,30);saveJSON(STORAGE_HISTORY,historyLogs);saveJSON(STORAGE_DATA,state);renderHistory();}
+    function renderHistory(){var box=document.getElementById('historyList');if(!box)return;if(!historyLogs.length){box.innerHTML='<div class="card-pad" style="text-align:center;color:var(--muted)"><i class="fa-solid fa-clock-rotate-left" style="font-size:38px;opacity:.35"></i><p style="font-weight:800">ยังไม่มีประวัติการวิเคราะห์</p></div>';return;}box.innerHTML=historyLogs.map(function(item){return'<div class="card"><div class="card-pad"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><div style="font-size:12px;color:var(--muted);font-weight:700">'+formatDate(item.createdAt)+'</div><div style="font-size:18px;font-weight:800;color:var(--ink)">'+escapeHTML(item.data.crop||'ไม่ระบุพืช')+'</div><div style="font-size:13px;color:var(--muted)">'+escapeHTML(item.data.farmerName||'ไม่ระบุชื่อ')+' • กำไร '+money(item.result.profit)+' บาท</div></div><div class="no-print" style="display:flex;gap:8px"><button type="button" class="icon-btn" data-load-history="'+escapeAttr(item.id)+'"><i class="fa-solid fa-upload"></i></button><button type="button" class="icon-btn" data-delete-history="'+escapeAttr(item.id)+'"><i class="fa-solid fa-trash text-danger"></i></button></div></div></div></div>';}).join('');}
+    function loadHistory(id){var item=historyLogs.find(function(x){return x.id===id;});if(!item)return toast('ไม่พบข้อมูลประวัติ','error');state=normalizeData(item.data);saveJSON(STORAGE_DATA,state);fillForm();updateAll();showPage('form');toast('โหลดข้อมูลแล้ว');}
+    function deleteHistory(id){historyLogs=historyLogs.filter(function(x){return x.id!==id;});saveJSON(STORAGE_HISTORY,historyLogs);renderHistory();toast('ลบประวัติแล้ว');}
+    function clearHistory(){if(!historyLogs.length)return toast('ยังไม่มีประวัติ','error');if(!confirm('ยืนยันการล้างประวัติทั้งหมด?'))return;historyLogs=[];saveJSON(STORAGE_HISTORY,historyLogs);renderHistory();toast('ล้างประวัติแล้ว');}
+    function resetApp(){state=normalizeData({});saveJSON(STORAGE_DATA,state);fillForm();reportExpanded=false;updateAll();showPage('form');toast('คืนค่าเริ่มต้นแล้ว');}
+    function showPage(page,scrollToTop){if(scrollToTop===undefined)scrollToTop=true;document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active');});var target=document.getElementById('page-'+page);if(target)target.classList.add('active');document.querySelectorAll('[data-page]').forEach(function(btn){btn.classList.toggle('active',btn.dataset.page===page);});var titles={form:'บันทึกข้อมูลการผลิต',dashboard:'Dashboard วิเคราะห์ผล',report:'รายงานสรุป',history:'ประวัติการวิเคราะห์'};setText('topTitle',titles[page]||'AgriCost Pro');if(scrollToTop)window.scrollTo({top:0,behavior:'smooth'});}window.showPage=showPage;
+    function exportCSV(){var result=calculate(state);var rows=[['หมวดหมู่','รายการ','จำนวนเงิน']];getReportGroups(result).forEach(function(group){rows.push([group.title,'รวมหมวดหมู่',group.total]);group.items.forEach(function(item){rows.push([group.title,item[0],item[1]]);});});var csv=String.fromCharCode(65279)+rows.map(function(row){return row.map(csvCell).join(',');}).join(String.fromCharCode(10));var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='agricost-report.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('ส่งออก CSV แล้ว');}
+    function toggleTheme(){var next=document.body.classList.contains('dark')?'light':'dark';applyTheme(next);saveJSON(STORAGE_THEME,next);}
+    function applyTheme(theme){document.body.classList.toggle('dark',theme==='dark');var icon=document.querySelector('#themeBtn i');if(icon)icon.className=theme==='dark'?'fa-solid fa-sun':'fa-solid fa-moon';}
+    function toNumber(value){var n=Number(value);return Number.isFinite(n)?n:0;}
+    function money(value){return toNumber(value).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});}
+    function num(value){var n=toNumber(value);return Number.isInteger(n)?String(n):n.toFixed(2).replace(/\.00$/,'');}
+    function setText(id,value){var el=document.getElementById(id);if(el)el.textContent=value;}
+    function uid(){return'id-'+Math.random().toString(36).slice(2,10)+'-'+Date.now().toString(36);}
+    function cloneData(value){return JSON.parse(JSON.stringify(value));}
+    function loadJSON(key,fallback){try{var raw=localStorage.getItem(key);return raw?JSON.parse(raw):fallback;}catch(e){return fallback;}}
+    function saveJSON(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch(e){console.warn('Cannot save',key,e);}}
+    function escapeHTML(value){return String(value).replace(/[&<>'"]/g,function(ch){return{'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch];});}
+    function escapeAttr(value){return escapeHTML(value);}
+    function csvCell(value){var text=String(value===undefined||value===null?'':value);return '"'+text.replace(/"/g,'""')+'"';}
+    function formatDate(value){var d=new Date(value);return Number.isNaN(d.getTime())?'-':d.toLocaleString('th-TH');}
+    function toast(message,type){var box=document.getElementById('toast');if(!box)return;box.textContent=message;box.style.background=type==='error'?'#dc2626':'#059669';box.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(function(){box.classList.remove('show');},2600);}
+    function runSelfTests(){try{console.assert(document.querySelectorAll('.app-shell').length===1,'TEST: one app shell');console.assert(document.querySelectorAll('.bottom-nav').length===1,'TEST: one bottom nav');console.assert(typeof window.showPage==='function','TEST: showPage exists');console.assert(document.querySelectorAll('.save-history-btn').length>=1,'TEST: save history buttons exist');console.assert(document.getElementById('saveToHistoryBtn')!==null,'TEST: save to history button exists');console.assert(calculate({yieldAmount:100,price:20,area:1,cFert:100,cChem:0,cSeed:0,cMat:0,cLabor:0,cMachine:0,cUtility:0,cMisc:0}).profit===1900,'TEST: profit calculation');console.assert(getReportGroups(calculate(normalizeData({cFert:100,cLabor:50}))).length===3,'TEST: report groups');console.assert(reportExpanded===false,'TEST: report collapsed by default');console.assert(csvCell('a,b')==='"a,b"','TEST: csv escaping comma');console.assert(csvCell('a"b')==='"a""b"','TEST: csv escaping quote');console.assert(normalizeData({area:'2',yieldAmount:'10'}).area===2,'TEST: normalize number');console.assert(['x','y'].join(String.fromCharCode(10)).indexOf(String.fromCharCode(10))===1,'TEST: newline safe');}catch(e){console.warn('Self test warning:',e);}}
   </script>
 </body>
 </html>
