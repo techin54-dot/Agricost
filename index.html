@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#062018" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>AgriCost Smart - ระบบวิเคราะห์ต้นทุนเกษตร</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { prompt: ['Prompt', 'sans-serif'] },
+          boxShadow: {
+            glow: '0 0 30px rgba(16,185,129,.22)',
+            card: '0 18px 48px rgba(2,6,23,.09)'
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root{
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
+      --safe-left: env(safe-area-inset-left);
+      --safe-right: env(safe-area-inset-right);
+      --green:#10b981;
+      --dark:#061b16;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --line:#dbe7e1;
+      --topbar-height:74px;
+      --bottom-nav-height:78px;
+    }
+
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html{height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+    body{
+      margin:0;
+      min-height:100dvh;
+      overflow:hidden;
+      font-family:'Prompt',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(16,185,129,.20), transparent 34rem),
+        radial-gradient(circle at 90% 12%, rgba(59,130,246,.10), transparent 30rem),
+        linear-gradient(180deg,#f7fbf8 0%,#edf6f1 100%);
+    }
+    html.dark body{color:#e5e7eb;background:linear-gradient(180deg,#020617 0%,#071711 100%)}
+    button,input,textarea,select{font-family:inherit;font-size:16px}
+    button{min-height:44px;touch-action:manipulation;border:0;cursor:pointer}
+    input,textarea,select{-webkit-appearance:none;appearance:none}
+    input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+    .app-shell{min-height:100dvh;height:100dvh;display:flex;flex-direction:column;padding-left:var(--safe-left);padding-right:var(--safe-right);overflow:hidden}
+    .topbar{position:sticky;top:0;z-index:40;flex:0 0 auto;padding-top:var(--safe-top);background:rgba(6,27,22,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.08)}
+    .tech-bg{background:linear-gradient(135deg,rgba(6,27,22,.98),rgba(9,55,43,.96));position:relative;overflow:hidden}
+    .tech-bg::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);background-size:28px 28px;mask-image:linear-gradient(180deg,#000,transparent 85%);pointer-events:none}
+    .soft-card{background:#fff;border:1px solid rgba(219,231,225,.9);box-shadow:0 14px 34px rgba(2,6,23,.06)}
+    .dark .soft-card{background:rgba(15,23,42,.86);border-color:rgba(148,163,184,.16);box-shadow:0 16px 40px rgba(0,0,0,.25)}
+    .glass{background:rgba(255,255,255,.86);border:1px solid rgba(219,231,225,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 18px 48px rgba(2,6,23,.08)}
+    .dark .glass{background:rgba(15,23,42,.70);border-color:rgba(148,163,184,.16)}
+    .dark-glass{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+    .field{width:100%;min-height:50px;border:1px solid #dbe7e1;border-radius:18px;background:#fff;padding:.82rem .95rem;outline:none;transition:.18s ease;color:#0f172a}
+    .field:focus{border-color:#10b981;box-shadow:0 0 0 4px rgba(16,185,129,.14)}
+    .dark .field{background:#0f172a;border-color:#263243;color:#e5e7eb}
+    .nav-btn{color:rgba(255,255,255,.72);border:1px solid transparent;background:transparent}
+    .nav-btn.active{color:#062018;background:linear-gradient(135deg,#a7f3d0,#34d399);border-color:rgba(255,255,255,.25);box-shadow:0 12px 30px rgba(16,185,129,.28)}
+    .content-wrap{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;width:100%;padding-top:20px;padding-bottom:20px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+    .content-inner{max-width:1280px;margin:0 auto;width:100%;padding-left:16px;padding-right:16px}
+    .bottom-nav{position:fixed;z-index:50;display:none;left:calc(10px + var(--safe-left));right:calc(10px + var(--safe-right));bottom:calc(10px + var(--safe-bottom));height:var(--bottom-nav-height);border-radius:28px;padding:8px;gap:6px;background:rgba(6,27,22,.92);border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 46px rgba(2,6,23,.36);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+    .bottom-nav button{flex:1;min-width:0;border-radius:21px;color:#cbd5e1;background:transparent;font-size:11px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:100%;padding:6px 2px}
+    .bottom-nav button i{font-size:18px;line-height:1}
+    .bottom-nav button.active{background:#10b981;color:#052018}
+    .page{display:none;animation:fadeIn .22s ease}
+    .page.active{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .toast{position:fixed;left:50%;top:calc(14px + var(--safe-top));transform:translateX(-50%) translateY(-10px);opacity:0;z-index:100;pointer-events:none;transition:.24s ease;max-width:min(92vw,520px);border-radius:18px;padding:12px 16px;color:#fff;font-weight:700;box-shadow:0 18px 44px rgba(2,6,23,.32)}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .chart-fallback{height:310px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:24px;background:rgba(148,163,184,.10);color:#94a3b8;padding:16px}
+    .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}.print-only{display:none}
+
+    @media(max-width:1023px){
+      .desktop-nav{display:none!important}
+      .bottom-nav{display:flex}
+      .content-wrap{padding-top:16px;padding-bottom:calc(var(--bottom-nav-height) + 28px + var(--safe-bottom))}
+      .content-inner{padding-left:12px;padding-right:12px}
+    }
+    @media(max-width:640px){
+      .hero-title{font-size:1.45rem;line-height:1.35}
+      .hero-stat{font-size:1.75rem}
+      .kpi-num{font-size:1.15rem}
+      .topbar h1{font-size:1rem}
+      .topbar p{font-size:10px}
+    }
+    @media(print){
+      .topbar,.bottom-nav,.no-print{display:none!important}
+      body{background:#fff!important;overflow:visible}
+      .app-shell{height:auto;overflow:visible}
+      .content-wrap{overflow:visible;padding:0!important}
+      .soft-card,.glass{box-shadow:none!important;border:1px solid #ddd!important}
+      .page{display:block!important}
+      .print-only{display:block!important}
+    }
+  </style>
+</head>
+
+<body>
+  <div id="toast" class="toast bg-emerald-600">ข้อความแจ้งเตือน</div>
+
+  <div class="app-shell">
+    <header class="topbar text-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-11 h-11 rounded-2xl bg-emerald-400 text-emerald-950 flex items-center justify-center shadow-glow shrink-0"><i class="fa-solid fa-leaf text-xl"></i></div>
+          <div class="min-w-0">
+            <h1 class="font-extrabold leading-tight truncate">AgriCost Smart</h1>
+            <p class="text-[11px] text-emerald-100/70 truncate">ระบบวิเคราะห์ต้นทุนเกษตร • GitHub / LINE Ready</p>
+          </div>
+        </div>
+        <nav class="desktop-nav flex items-center gap-2 text-sm font-bold">
+          <button type="button" data-page="form" class="nav-btn active px-4 py-2 rounded-2xl"><i class="fa-solid fa-pen-to-square mr-1"></i> บันทึก</button>
+          <button type="button" data-page="dashboard" class="nav-btn px-4 py-2 rounded-2xl"><i class="fa-solid fa-chart-pie mr-1"></i> Dashboard</button>
+          <button type="button" data-page="report" class="nav-btn px-4 py-2 rounded-2xl"><i class="fa-solid fa-file-invoice mr-1"></i> รายงาน</button>
+          <button type="button" data-page="history" class="nav-btn px-4 py-2 rounded-2xl"><i class="fa-solid fa-clock-rotate-left mr-1"></i> ประวัติ</button>
+        </nav>
+        <div class="flex items-center gap-2 no-print">
+          <button type="button" id="dark-toggle" class="w-11 h-11 rounded-2xl bg-white/10 text-white"><i class="fa-solid fa-moon"></i></button>
+          <button type="button" id="reset-app" class="hidden sm:inline-flex bg-red-500/90 text-white font-bold px-4 py-2 rounded-2xl"><i class="fa-solid fa-rotate-right mr-2"></i>ล้าง</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main-scroll" class="content-wrap">
+      <div class="content-inner space-y-6">
+        <section id="page-form" class="page active space-y-6">
+          <div class="tech-bg rounded-[2rem] p-4 sm:p-8 text-white shadow-card">
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              <div class="lg:col-span-8">
+                <span class="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-3 py-1 text-xs font-bold mb-4"><i class="fa-solid fa-microchip text-lime-300"></i> Smart Hi-Technology Cost Dashboard</span>
+                <h2 class="hero-title text-2xl sm:text-4xl font-extrabold leading-tight">วิเคราะห์ต้นทุนการผลิตเกษตร<br><span class="text-emerald-300">รู้กำไร รู้จุดคุ้มทุน วางแผนได้ทันที</span></h2>
+                <p class="text-emerald-50/80 mt-3 leading-relaxed">กรอกข้อมูลพื้นที่ ผลผลิต ราคาขาย และรายการต้นทุน ระบบจะคำนวณรายได้ ต้นทุนรวม กำไรสุทธิ ต้นทุนต่อไร่ ต้นทุนต่อกิโลกรัม และจุดคุ้มทุน พร้อมกราฟและรายงานสรุป</p>
+              </div>
+              <div class="lg:col-span-4 grid grid-cols-2 gap-3">
+                <div class="dark-glass rounded-3xl p-4"><p class="text-xs text-emerald-100/70">กำไรล่าสุด</p><strong id="hero-profit" class="hero-stat text-3xl font-extrabold text-emerald-300">0</strong><p class="text-[11px] text-white/50">บาท</p></div>
+                <div class="dark-glass rounded-3xl p-4"><p class="text-xs text-emerald-100/70">ประวัติ</p><strong id="hero-history" class="hero-stat text-3xl font-extrabold text-lime-300">0</strong><p class="text-[11px] text-white/50">รายการ</p></div>
+              </div>
+            </div>
+          </div>
+
+          <form id="agri-form" class="space-y-5">
+            <div class="soft-card rounded-[2rem] p-5 sm:p-6">
+              <h2 class="text-xl font-extrabold text-emerald-800 dark:text-emerald-300 mb-4"><i class="fa-solid fa-circle-info mr-2"></i>1. ข้อมูลพื้นฐาน</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <div class="sm:col-span-2"><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="farmerName">ชื่อเกษตรกร / ชื่อแปลง</label><input id="farmerName" class="field" placeholder="เช่น แปลงนาข้าว หมู่ 1" autocomplete="name"></div>
+                <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="crop">ชนิดพืช</label><input id="crop" class="field" placeholder="เช่น ข้าว"></div>
+                <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="area">พื้นที่ (ไร่)</label><input id="area" type="number" inputmode="decimal" min="0" step="0.01" class="field calc-input" placeholder="0"></div>
+                <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="yieldKg">ผลผลิต (กก.)</label><input id="yieldKg" type="number" inputmode="decimal" min="0" step="0.01" class="field calc-input" placeholder="0"></div>
+                <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="price">ราคาขาย (บาท/กก.)</label><input id="price" type="number" inputmode="decimal" min="0" step="0.01" class="field calc-input" placeholder="0"></div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="soft-card rounded-[2rem] p-5 sm:p-6">
+                <h2 class="text-xl font-extrabold text-emerald-800 dark:text-emerald-300 mb-4"><i class="fa-solid fa-seedling mr-2"></i>2. ต้นทุนปัจจัยการผลิต</h2>
+                <div class="grid grid-cols-2 gap-3">
+                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cFert">ค่าปุ๋ย</label><input id="cFert" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
+                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cChem">ค่าสารเคมี</label><input id="cChem" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
+                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cSeed">ค่าเมล็ดพันธุ์</label><input id="cSeed" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
+                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cMat">ค่าวัสดุ/น้ำมัน</label><input id="cMat" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
+                </div>
+              </div>
+
+              <div class="soft-card rounded-[2rem] p-5 sm:p-6">
+                <h2 class="text-xl font-extrabold text-sky-800 dark:text-sky-300 mb-4"><i class="fa-solid fa-tractor mr-2"></i>3. แรงงาน เครื่องจักร และอื่น ๆ</h2>
+                <div class="grid grid-cols-2 gap-3">
+                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cLabor">ค่าแรง</label><input id="cLabor" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
+                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cMachine">ค่าเครื่องจักร</label><input id="cMachine" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
+                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cUtility">ค่าน้ำ/ไฟ/ขนส่ง</label><input id="cUtility" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
+                  <div><label class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 block" for="cMisc">ค่าใช้จ่ายอื่น ๆ</label><input id="cMisc" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="field calc-input"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass rounded-[2rem] p-5 sm:p-6">
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                <div class="lg:col-span-8">
+                  <p class="font-bold text-emerald-700 dark:text-emerald-300">กำไรสุทธิคาดการณ์</p>
+                  <h2 id="liveProfit" class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">0 บาท</h2>
+                  <p id="liveSub" class="text-sm text-slate-500 dark:text-slate-400 mt-1">กรอกข้อมูลเพื่อดูผลวิเคราะห์แบบทันที</p>
+                </div>
+                <div class="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-2 no-print">
+                  <button type="submit" class="bg-gradient-to-r from-emerald-500 to-lime-400 text-emerald-950 font-extrabold px-5 py-3 rounded-2xl shadow-glow w-full"><i class="fa-solid fa-chart-line mr-2"></i>ประมวลผล Dashboard</button>
+                  <button type="button" id="save-record" class="bg-blue-600 text-white font-extrabold px-5 py-3 rounded-2xl w-full"><i class="fa-solid fa-floppy-disk mr-2"></i>บันทึกประวัติ</button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <section id="page-dashboard" class="page space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div><h2 class="text-2xl font-extrabold text-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-chart-pie mr-2"></i>Dashboard วิเคราะห์ผล</h2><p class="text-sm text-slate-500 dark:text-slate-400">สรุปภาพรวมรายได้ ต้นทุน กำไร และจุดคุ้มทุน</p></div>
+            <div class="flex gap-2 no-print"><button type="button" id="print-report" class="bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-slate-700 px-4 py-2 rounded-2xl font-bold"><i class="fa-solid fa-print mr-1"></i> พิมพ์</button><button type="button" id="share-record" class="bg-emerald-600 text-white px-4 py-2 rounded-2xl font-bold"><i class="fa-solid fa-share-nodes mr-1"></i> แชร์</button></div>
+          </div>
+
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="soft-card rounded-3xl p-4 border-l-4 border-red-500"><p class="text-xs text-slate-500 dark:text-slate-400">ต้นทุนรวม</p><h3 id="kCost" class="kpi-num text-2xl font-extrabold text-red-600">0</h3></div>
+            <div class="soft-card rounded-3xl p-4 border-l-4 border-emerald-500"><p class="text-xs text-slate-500 dark:text-slate-400">รายได้รวม</p><h3 id="kRevenue" class="kpi-num text-2xl font-extrabold text-emerald-600">0</h3></div>
+            <div class="soft-card rounded-3xl p-4 border-l-4 border-blue-500"><p class="text-xs text-slate-500 dark:text-slate-400">กำไรสุทธิ</p><h3 id="kProfit" class="kpi-num text-2xl font-extrabold text-blue-600">0</h3></div>
+            <div class="soft-card rounded-3xl p-4 border-l-4 border-amber-500"><p class="text-xs text-slate-500 dark:text-slate-400">จุดคุ้มทุน</p><h3 id="kBreakEven" class="kpi-num text-2xl font-extrabold text-amber-600">0</h3></div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div class="soft-card rounded-[2rem] p-5 lg:col-span-2"><h3 class="font-extrabold mb-4 dark:text-white"><i class="fa-solid fa-chart-column text-emerald-600 mr-2"></i>รายได้ - ต้นทุน - กำไร</h3><div class="h-[310px] relative" id="barChartBox"><canvas id="barChart"></canvas></div></div>
+            <div class="soft-card rounded-[2rem] p-5"><h3 class="font-extrabold mb-4 dark:text-white"><i class="fa-solid fa-chart-pie text-sky-600 mr-2"></i>สัดส่วนต้นทุน</h3><div class="h-[310px] relative" id="pieChartBox"><canvas id="pieChart"></canvas></div></div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="glass rounded-3xl p-4"><p class="text-xs text-slate-500 dark:text-slate-400">ต้นทุนต่อไร่</p><h3 id="kCostPerRai" class="text-2xl font-extrabold text-slate-900 dark:text-white">0</h3></div>
+            <div class="glass rounded-3xl p-4"><p class="text-xs text-slate-500 dark:text-slate-400">ต้นทุนต่อกก.</p><h3 id="kCostPerKg" class="text-2xl font-extrabold text-slate-900 dark:text-white">0</h3></div>
+            <div class="glass rounded-3xl p-4"><p class="text-xs text-slate-500 dark:text-slate-400">ผลผลิตต่อไร่</p><h3 id="kYieldPerRai" class="text-2xl font-extrabold text-slate-900 dark:text-white">0</h3></div>
+          </div>
+        </section>
+
+        <section id="page-report" class="page space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div><h2 class="text-2xl font-extrabold text-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-file-invoice mr-2"></i>รายงานสรุปต้นทุน</h2><p class="text-sm text-slate-500 dark:text-slate-400">ตารางสรุปรายการต้นทุนและผลวิเคราะห์</p></div>
+            <button type="button" id="export-csv" class="no-print bg-emerald-600 text-white px-4 py-2 rounded-2xl font-bold"><i class="fa-solid fa-file-excel mr-1"></i> Export Excel/CSV</button>
+          </div>
+          <div class="soft-card rounded-[2rem] p-3 sm:p-5 overflow-x-auto">
+            <table class="w-full min-w-[680px] text-sm" id="reportTable">
+              <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-300"><tr><th class="text-left p-3 rounded-l-2xl">หมวดหมู่</th><th class="text-left p-3">รายการ</th><th class="text-right p-3 rounded-r-2xl">จำนวนเงิน / ค่า</th></tr></thead>
+              <tbody id="reportBody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="page-history" class="page space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div><h2 class="text-2xl font-extrabold text-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-clock-rotate-left mr-2"></i>ประวัติการบันทึก</h2><p class="text-sm text-slate-500 dark:text-slate-400">ข้อมูลบันทึกในเครื่องผู้ใช้ด้วย LocalStorage</p></div>
+            <button type="button" id="clear-history" class="no-print bg-red-50 text-red-600 px-4 py-2 rounded-2xl font-bold"><i class="fa-solid fa-trash mr-1"></i> ล้างประวัติ</button>
+          </div>
+          <div id="historyList" class="space-y-3"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <nav class="bottom-nav lg:hidden no-print">
+    <button type="button" data-page="form" class="active"><i class="fa-solid fa-pen-to-square"></i><span>บันทึก</span></button>
+    <button type="button" data-page="dashboard"><i class="fa-solid fa-chart-pie"></i><span>วิเคราะห์</span></button>
+    <button type="button" data-page="report"><i class="fa-solid fa-file-invoice"></i><span>รายงาน</span></button>
+    <button type="button" data-page="history"><i class="fa-solid fa-clock-rotate-left"></i><span>ประวัติ</span></button>
+  </nav>
+
+  <script>
+    'use strict';
+
+    const STORAGE_CURRENT = 'agricost_current_v4';
+    const STORAGE_HISTORY = 'agricost_history_v4';
+    const STORAGE_THEME = 'agricost_theme_v4';
+    let currentRecord = null;
+    let historyRecords = [];
+    let pieChart = null;
+    let barChart = null;
+
+    const costItems = [
+      ['ปัจจัยการผลิต','ค่าปุ๋ย','cFert'],
+      ['ปัจจัยการผลิต','ค่าสารเคมี','cChem'],
+      ['ปัจจัยการผลิต','ค่าเมล็ดพันธุ์','cSeed'],
+      ['ปัจจัยการผลิต','ค่าวัสดุ/น้ำมัน','cMat'],
+      ['แรงงานและเครื่องจักร','ค่าแรง','cLabor'],
+      ['แรงงานและเครื่องจักร','ค่าเครื่องจักร','cMachine'],
+      ['แรงงานและเครื่องจักร','ค่าน้ำ/ไฟ/ขนส่ง','cUtility'],
+      ['อื่น ๆ','ค่าใช้จ่ายอื่น ๆ','cMisc']
+    ];
+
+    document.addEventListener('DOMContentLoaded', initApp);
+
+    function initApp(){
+      currentRecord = loadJSON(STORAGE_CURRENT, null);
+      historyRecords = loadJSON(STORAGE_HISTORY, []);
+      if(loadJSON(STORAGE_THEME, 'light') === 'dark') document.documentElement.classList.add('dark');
+      bindEvents();
+      if(currentRecord) fillForm(currentRecord);
+      updateLivePreview();
+      renderAll();
+      showPage('form', false);
+      runSelfTests();
+    }
+
+    function bindEvents(){
+      document.querySelectorAll('[data-page]').forEach(function(btn){btn.addEventListener('click', function(){showPage(btn.dataset.page);});});
+      document.querySelectorAll('.calc-input').forEach(function(input){input.addEventListener('input', updateLivePreview);});
+      getElement('agri-form').addEventListener('submit', handleSubmit);
+      getElement('save-record').addEventListener('click', saveCurrentRecord);
+      getElement('print-report').addEventListener('click', function(){window.print();});
+      getElement('export-csv').addEventListener('click', exportCSV);
+      getElement('share-record').addEventListener('click', shareCurrentRecord);
+      getElement('clear-history').addEventListener('click', clearHistory);
+      getElement('reset-app').addEventListener('click', resetApp);
+      getElement('dark-toggle').addEventListener('click', toggleDarkMode);
+    }
+
+    function showPage(page, animate){
+      if(animate === undefined) animate = true;
+      document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active');});
+      var pageEl = getElement('page-' + page);
+      if(pageEl) pageEl.classList.add('active');
+      document.querySelectorAll('[data-page]').forEach(function(btn){btn.classList.toggle('active', btn.dataset.page === page);});
+      if(page === 'dashboard') renderDashboard();
+      if(page === 'report') renderReport();
+      if(page === 'history') renderHistory();
+      var mainScroll = getElement('main-scroll');
+      if(mainScroll){
+        if(animate) mainScroll.scrollTo({top:0, behavior:'smooth'});
+        else mainScroll.scrollTop = 0;
+      }
+    }
+    window.showPage = showPage;
+
+    function handleSubmit(event){
+      event.preventDefault();
+      var record = buildRecordFromForm(false);
+      if(!record.area || !record.yieldKg || !record.price){
+        toast('กรุณากรอกพื้นที่ ผลผลิต และราคาขายให้ครบถ้วน','error');
+        return;
+      }
+      currentRecord = record;
+      saveJSON(STORAGE_CURRENT, currentRecord);
+      renderAll();
+      toast('ประมวลผล Dashboard สำเร็จ');
+      showPage('dashboard');
+    }
+
+    function buildRecordFromForm(createNewId){
+      var now = new Date().toISOString();
+      var data = {
+        id: createNewId || !(currentRecord && currentRecord.id) ? uid() : currentRecord.id,
+        createdAt: createNewId || !(currentRecord && currentRecord.createdAt) ? now : currentRecord.createdAt,
+        updatedAt: now,
+        farmerName: getValue('farmerName').trim() || 'ไม่ระบุชื่อแปลง',
+        crop: getValue('crop').trim() || 'ไม่ระบุชนิดพืช',
+        area: nonNegative(getValue('area')),
+        yieldKg: nonNegative(getValue('yieldKg')),
+        price: nonNegative(getValue('price'))
+      };
+      costItems.forEach(function(item){data[item[2]] = nonNegative(getValue(item[2]));});
+      return calculateRecord(data);
+    }
+
+    function calculateRecord(data){
+      var normalized = Object.assign({}, data);
+      normalized.area = nonNegative(normalized.area);
+      normalized.yieldKg = nonNegative(normalized.yieldKg);
+      normalized.price = nonNegative(normalized.price);
+      costItems.forEach(function(item){normalized[item[2]] = nonNegative(normalized[item[2]]);});
+      var totalCost = costItems.reduce(function(sum,item){return sum + normalized[item[2]];}, 0);
+      var revenue = normalized.yieldKg * normalized.price;
+      var profit = revenue - totalCost;
+      var costPerRai = normalized.area > 0 ? totalCost / normalized.area : 0;
+      var costPerKg = normalized.yieldKg > 0 ? totalCost / normalized.yieldKg : 0;
+      var yieldPerRai = normalized.area > 0 ? normalized.yieldKg / normalized.area : 0;
+      var breakEvenPrice = normalized.yieldKg > 0 ? totalCost / normalized.yieldKg : 0;
+      var profitPerRai = normalized.area > 0 ? profit / normalized.area : 0;
+      return Object.assign({}, normalized, {totalCost:totalCost,revenue:revenue,profit:profit,costPerRai:costPerRai,costPerKg:costPerKg,yieldPerRai:yieldPerRai,breakEvenPrice:breakEvenPrice,profitPerRai:profitPerRai});
+    }
+
+    function updateLivePreview(){
+      var base = {area: nonNegative(getValue('area')), yieldKg: nonNegative(getValue('yieldKg')), price: nonNegative(getValue('price'))};
+      costItems.forEach(function(item){base[item[2]] = nonNegative(getValue(item[2]));});
+      var record = calculateRecord(base);
+      setText('liveProfit', money(record.profit) + ' บาท');
+      setText('liveSub', 'รายได้ ' + money(record.revenue) + ' บาท • ต้นทุน ' + money(record.totalCost) + ' บาท');
+    }
+
+    function renderAll(){
+      renderHero();
+      renderDashboard();
+      renderReport();
+      renderHistory();
+    }
+
+    function renderHero(){
+      setText('hero-profit', currentRecord ? moneyCompact(currentRecord.profit) : '0');
+      setText('hero-history', historyRecords.length);
+    }
+
+    function renderDashboard(){
+      var r = currentRecord || calculateRecord(emptyRecord());
+      setText('kCost', money(r.totalCost));
+      setText('kRevenue', money(r.revenue));
+      setText('kProfit', money(r.profit));
+      setText('kBreakEven', money(r.breakEvenPrice) + ' บ./กก.');
+      setText('kCostPerRai', money(r.costPerRai) + ' บ./ไร่');
+      setText('kCostPerKg', money(r.costPerKg) + ' บ./กก.');
+      setText('kYieldPerRai', money(r.yieldPerRai) + ' กก./ไร่');
+      renderCharts(r);
+    }
+
+    function renderCharts(record){
+      var pieBox = getElement('pieChartBox');
+      var barBox = getElement('barChartBox');
+      if(!window.Chart){
+        if(pieBox) pieBox.innerHTML = '<div class="chart-fallback">ไม่สามารถโหลด Chart.js ได้</div>';
+        if(barBox) barBox.innerHTML = '<div class="chart-fallback">ไม่สามารถโหลด Chart.js ได้</div>';
+        return;
+      }
+      if(!getElement('pieChart') && pieBox) pieBox.innerHTML = '<canvas id="pieChart"></canvas>';
+      if(!getElement('barChart') && barBox) barBox.innerHTML = '<canvas id="barChart"></canvas>';
+      var pieCanvas = getElement('pieChart');
+      var barCanvas = getElement('barChart');
+      if(!pieCanvas || !barCanvas) return;
+      if(pieChart) pieChart.destroy();
+      if(barChart) barChart.destroy();
+      var costValues = costItems.map(function(item){return nonNegative(record[item[2]]);});
+      pieChart = new Chart(pieCanvas, {
+        type:'doughnut',
+        data:{labels:costItems.map(function(item){return item[1];}),datasets:[{data:costValues,borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Prompt'}}}}}
+      });
+      barChart = new Chart(barCanvas, {
+        type:'bar',
+        data:{labels:['รายได้','ต้นทุน','กำไร'],datasets:[{label:'บาท',data:[record.revenue,record.totalCost,record.profit],borderRadius:12}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{family:'Prompt'}}},y:{ticks:{font:{family:'Prompt'}}}}}
+      });
+    }
+
+    function renderReport(){
+      var body = getElement('reportBody');
+      if(!body) return;
+      var r = currentRecord;
+      if(!r){
+        body.innerHTML = '<tr><td colspan="3" class="p-6 text-center text-slate-400">ยังไม่มีข้อมูล กรุณากรอกและประมวลผลก่อน</td></tr>';
+        return;
+      }
+      var rows = buildReportRows(r);
+      body.innerHTML = rows.map(function(row){return '<tr class="dark:text-slate-200"><td class="p-3 text-slate-500 dark:text-slate-400">' + escapeHTML(row[0]) + '</td><td class="p-3 font-bold">' + escapeHTML(row[1]) + '</td><td class="p-3 text-right font-extrabold">' + escapeHTML(row[2]) + '</td></tr>';}).join('');
+    }
+
+    function buildReportRows(r){
+      var rows = [
+        ['ข้อมูลพื้นฐาน','ชื่อเกษตรกร/แปลง',r.farmerName],
+        ['ข้อมูลพื้นฐาน','ชนิดพืช',r.crop],
+        ['ข้อมูลพื้นฐาน','พื้นที่',money(r.area) + ' ไร่'],
+        ['ข้อมูลพื้นฐาน','ผลผลิตทั้งหมด',money(r.yieldKg) + ' กก.'],
+        ['ข้อมูลพื้นฐาน','ราคาขาย',money(r.price) + ' บาท/กก.']
+      ];
+      costItems.forEach(function(item){rows.push([item[0], item[1], money(r[item[2]]) + ' บาท']);});
+      rows.push(['ผลวิเคราะห์','รายได้รวม',money(r.revenue) + ' บาท']);
+      rows.push(['ผลวิเคราะห์','ต้นทุนรวม',money(r.totalCost) + ' บาท']);
+      rows.push(['ผลวิเคราะห์','กำไรสุทธิ',money(r.profit) + ' บาท']);
+      rows.push(['ผลวิเคราะห์','ต้นทุนต่อไร่',money(r.costPerRai) + ' บาท/ไร่']);
+      rows.push(['ผลวิเคราะห์','ต้นทุนต่อกิโลกรัม',money(r.costPerKg) + ' บาท/กก.']);
+      rows.push(['ผลวิเคราะห์','ผลผลิตต่อไร่',money(r.yieldPerRai) + ' กก./ไร่']);
+      rows.push(['ผลวิเคราะห์','จุดคุ้มทุน',money(r.breakEvenPrice) + ' บาท/กก.']);
+      return rows;
+    }
+
+    function renderHistory(){
+      var list = getElement('historyList');
+      if(!list) return;
+      if(!historyRecords.length){
+        list.innerHTML = '<div class="soft-card rounded-3xl p-10 text-center text-slate-400"><i class="fa-solid fa-clock-rotate-left text-4xl mb-3 text-slate-300"></i><p class="font-bold">ยังไม่มีประวัติการบันทึก</p></div>';
+        return;
+      }
+      list.innerHTML = historyRecords.map(function(r){
+        return '<div class="glass rounded-3xl p-4"><div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3"><div><p class="text-xs text-slate-400">' + escapeHTML(formatDate(r.updatedAt || r.createdAt)) + '</p><h3 class="text-xl font-extrabold text-emerald-800 dark:text-emerald-300">' + escapeHTML(r.crop) + ' • ' + escapeHTML(r.farmerName) + '</h3><p class="text-sm text-slate-500 dark:text-slate-400 mt-1">รายได้ ' + money(r.revenue) + ' • ต้นทุน ' + money(r.totalCost) + ' • กำไร ' + money(r.profit) + ' บาท</p></div><div class="flex gap-2 no-print"><button type="button" data-load-history="' + escapeAttr(r.id) + '" class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-700"><i class="fa-solid fa-folder-open"></i></button><button type="button" data-share-history="' + escapeAttr(r.id) + '" class="w-11 h-11 rounded-2xl bg-slate-100 text-slate-700"><i class="fa-solid fa-share-nodes"></i></button><button type="button" data-delete-history="' + escapeAttr(r.id) + '" class="w-11 h-11 rounded-2xl bg-red-50 text-red-600"><i class="fa-solid fa-trash"></i></button></div></div></div>';
+      }).join('');
+      list.querySelectorAll('[data-load-history]').forEach(function(btn){btn.addEventListener('click', function(){loadHistoryRecord(btn.dataset.loadHistory);});});
+      list.querySelectorAll('[data-share-history]').forEach(function(btn){btn.addEventListener('click', function(){shareRecord(historyRecords.find(function(r){return r.id === btn.dataset.shareHistory;}));});});
+      list.querySelectorAll('[data-delete-history]').forEach(function(btn){btn.addEventListener('click', function(){deleteHistoryRecord(btn.dataset.deleteHistory);});});
+    }
+
+    function saveCurrentRecord(){
+      var record = buildRecordFromForm(true);
+      if(!record.area || !record.yieldKg || !record.price){
+        toast('กรุณากรอกข้อมูลพื้นฐานให้ครบก่อนบันทึก','error');
+        return;
+      }
+      currentRecord = record;
+      historyRecords.unshift(record);
+      saveJSON(STORAGE_CURRENT, currentRecord);
+      saveJSON(STORAGE_HISTORY, historyRecords);
+      renderAll();
+      toast('บันทึกประวัติเรียบร้อย');
+    }
+
+    function loadHistoryRecord(id){
+      var record = historyRecords.find(function(r){return r.id === id;});
+      if(!record) return;
+      currentRecord = record;
+      saveJSON(STORAGE_CURRENT, currentRecord);
+      fillForm(record);
+      updateLivePreview();
+      renderAll();
+      toast('โหลดข้อมูลจากประวัติแล้ว');
+      showPage('dashboard');
+    }
+
+    function deleteHistoryRecord(id){
+      if(!confirm('ยืนยันการลบประวัติรายการนี้?')) return;
+      historyRecords = historyRecords.filter(function(r){return r.id !== id;});
+      saveJSON(STORAGE_HISTORY, historyRecords);
+      renderAll();
+      toast('ลบประวัติแล้ว');
+    }
+
+    function clearHistory(){
+      if(!historyRecords.length){
+        toast('ยังไม่มีประวัติ','error');
+        return;
+      }
+      if(!confirm('ยืนยันการล้างประวัติทั้งหมด?')) return;
+      historyRecords = [];
+      saveJSON(STORAGE_HISTORY, historyRecords);
+      renderAll();
+      toast('ล้างประวัติเรียบร้อย');
+    }
+
+    function fillForm(r){
+      ['farmerName','crop','area','yieldKg','price','cFert','cChem','cSeed','cMat','cLabor','cMachine','cUtility','cMisc'].forEach(function(id){
+        var el = getElement(id);
+        if(el) el.value = r[id] !== undefined && r[id] !== null ? r[id] : '';
+      });
+    }
+
+    function resetApp(){
+      if(!confirm('ต้องการล้างข้อมูลที่กรอกอยู่หรือไม่? ประวัติที่บันทึกไว้จะยังคงอยู่')) return;
+      currentRecord = null;
+      localStorage.removeItem(STORAGE_CURRENT);
+      getElement('agri-form').reset();
+      costItems.forEach(function(item){
+        var el = getElement(item[2]);
+        if(el) el.value = 0;
+      });
+      updateLivePreview();
+      renderAll();
+      toast('ล้างข้อมูลที่กรอกแล้ว');
+      showPage('form');
+    }
+
+    function exportCSV(){
+      if(!currentRecord){
+        toast('ยังไม่มีข้อมูลสำหรับส่งออก','error');
+        return;
+      }
+      var rows = [['หมวดหมู่','รายการ','จำนวนเงิน/ค่า']].concat(buildReportRows(currentRecord));
+      var csv = '\uFEFF' + rows.map(function(row){
+        return row.map(function(cell){return '"' + String(cell).replace(/"/g,'""') + '"';}).join(',');
+      }).join('\n');
+      var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'AgriCost-' + sanitizeFileName(currentRecord.crop || 'report') + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function shareCurrentRecord(){
+      if(!currentRecord){
+        toast('ยังไม่มีข้อมูลสำหรับแชร์','error');
+        return;
+      }
+      await shareRecord(currentRecord);
+    }
+
+    async function shareRecord(r){
+      if(!r) return;
+      var text = [
+        'AgriCost Smart',
+        'พืช: ' + r.crop,
+        'แปลง/เกษตรกร: ' + r.farmerName,
+        'พื้นที่: ' + money(r.area) + ' ไร่',
+        'ผลผลิต: ' + money(r.yieldKg) + ' กก.',
+        'รายได้: ' + money(r.revenue) + ' บาท',
+        'ต้นทุน: ' + money(r.totalCost) + ' บาท',
+        'กำไรสุทธิ: ' + money(r.profit) + ' บาท',
+        'จุดคุ้มทุน: ' + money(r.breakEvenPrice) + ' บาท/กก.'
+      ].join('\n');
+      try{
+        if(navigator.share){
+          await navigator.share({title:'AgriCost Smart', text:text});
+          return;
+        }
+        if(navigator.clipboard && window.isSecureContext){
+          await navigator.clipboard.writeText(text);
+        }else{
+          fallbackCopy(text);
+        }
+        toast('คัดลอกข้อมูลสำหรับแชร์แล้ว');
+      }catch(e){
+        fallbackCopy(text);
+        toast('คัดลอกข้อมูลสำหรับแชร์แล้ว');
+      }
+    }
+
+    function toggleDarkMode(){
+      document.documentElement.classList.toggle('dark');
+      saveJSON(STORAGE_THEME, document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+      renderCharts(currentRecord || calculateRecord(emptyRecord()));
+    }
+
+    function fallbackCopy(text){
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+
+    function emptyRecord(){
+      var record = {area:0,yieldKg:0,price:0};
+      costItems.forEach(function(item){record[item[2]] = 0;});
+      return record;
+    }
+
+    function getElement(id){return document.getElementById(id);}
+    function getValue(id){var el = getElement(id); return el ? el.value : '';}
+    function safeNumber(value,fallback){var n = Number(value); return Number.isFinite(n) ? n : (fallback || 0);}
+    function nonNegative(value){return Math.max(0, safeNumber(value,0));}
+    function money(v){return safeNumber(v,0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});}
+    function moneyCompact(v){return safeNumber(v,0).toLocaleString('th-TH',{maximumFractionDigits:0});}
+    function setText(id,value){var el = getElement(id); if(el) el.textContent = value;}
+    function toast(msg,type){
+      var t = getElement('toast');
+      if(!t) return;
+      t.textContent = msg;
+      t.className = 'toast ' + (type === 'error' ? 'bg-red-600' : 'bg-emerald-600') + ' show';
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(function(){t.classList.remove('show');},2800);
+    }
+    function uid(){return 'id-' + Math.random().toString(36).slice(2,10) + '-' + Date.now().toString(36);}
+    function loadJSON(key,fallback){try{var value = localStorage.getItem(key); return value ? JSON.parse(value) : fallback;}catch(e){return fallback;}}
+    function saveJSON(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch(e){console.warn(e);}}
+    function escapeHTML(str){return String(str).replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c];});}
+    function escapeAttr(str){return escapeHTML(str);}
+    function sanitizeFileName(str){return String(str).replace(/[\\/:*?"<>|]/g,'-').trim() || 'report';}
+    function formatDate(value){var d = new Date(value); return Number.isNaN(d.getTime()) ? '-' : d.toLocaleString('th-TH');}
+
+    function runSelfTests(){
+      console.assert(typeof window.showPage === 'function','showPage must be global');
+      var test = calculateRecord({area:10,yieldKg:5000,price:10,cFert:1000,cChem:500,cSeed:500,cMat:0,cLabor:1000,cMachine:1000,cUtility:500,cMisc:500});
+      console.assert(test.revenue === 50000,'Revenue test failed');
+      console.assert(test.totalCost === 5000,'Cost test failed');
+      console.assert(test.profit === 45000,'Profit test failed');
+      console.assert(buildReportRows(test).length >= 10,'Report rows test failed');
+      var negative = calculateRecord({area:-1,yieldKg:-1,price:-1,cFert:-100,cChem:0,cSeed:0,cMat:0,cLabor:0,cMachine:0,cUtility:0,cMisc:0});
+      console.assert(negative.totalCost === 0 && negative.revenue === 0,'Non-negative normalization test failed');
+      var rows = [['หมวดหมู่','รายการ','จำนวนเงิน/ค่า']].concat(buildReportRows(test));
+      var csv = '\uFEFF' + rows.map(function(row){return row.map(function(cell){return '"' + String(cell).replace(/"/g,'""') + '"';}).join(',');}).join('\n');
+      console.assert(csv.indexOf('\n') > -1,'CSV newline test failed');
+      var shareText = ['A','B'].join('\n');
+      console.assert(shareText === 'A\nB','Share newline test failed');
+    }
+  </script>
+</body>
+</html>
